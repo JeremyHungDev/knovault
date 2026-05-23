@@ -133,6 +133,22 @@ public class LibraryScanServiceTests : IDisposable
             (await verify.Set<DigitalCopy>().SingleAsync()).IsMissing.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task Scan_reports_progress_per_file()
+    {
+        await AddFolderAsync();
+        PlaceEpub(_libraryDir, "p1.epub");
+        PlaceEpub(_libraryDir, "p2.epub");
+
+        var progresses = new List<Knovault.Application.Library.ScanProgress>();
+        await using var ctx = _db.NewContext();
+        await NewService(ctx).ScanAsync(p => { progresses.Add(p); return Task.CompletedTask; });
+
+        progresses.Should().HaveCount(2);
+        progresses.Last().Processed.Should().Be(2);
+        progresses.Last().Total.Should().Be(2);
+    }
+
     public void Dispose()
     {
         _db.Dispose();

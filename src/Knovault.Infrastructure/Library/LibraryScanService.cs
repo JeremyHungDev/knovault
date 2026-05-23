@@ -30,13 +30,16 @@ public sealed class LibraryScanService : ILibraryScanService
         _coverStore = coverStore;
     }
 
-    public async Task<ScanReport> ScanAsync(CancellationToken ct = default)
+    public Task<ScanReport> ScanAsync(CancellationToken ct = default) => ScanAsync(null, ct);
+
+    public async Task<ScanReport> ScanAsync(Func<ScanProgress, Task>? onProgress, CancellationToken ct = default)
     {
         var report = new ScanReport();
         var folders = await _db.LibraryFolders.Where(f => f.Enabled).ToListAsync(ct);
         var seenCopyIds = new HashSet<Guid>();
-        var sinceLastSave = 0;
 
+        // 先收集所有檔案以計算總數（供進度回報）
+        var work = new List<(LibraryFolder Folder, string File)>();
         foreach (var folder in folders)
         {
             if (!Directory.Exists(folder.Path))
@@ -44,38 +47,45 @@ public sealed class LibraryScanService : ILibraryScanService
                 report.Failures.Add(new ScanFailure(folder.Path, "資料夾無法存取"));
                 continue;
             }
+            foreach (var file in EnumerateBookFiles(folder.Path)) work.Add((folder, file));
+        }
 
-            foreach (var file in EnumerateBookFiles(folder.Path))
+        var total = work.Count;
+        var processed = 0;
+        var sinceLastSave = 0;
+
+        foreach (var (folder, file) in work)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
             {
-                ct.ThrowIfCancellationRequested();
-                try
+                var hash = await ComputeHashWithRetryAsync(file, ct);
+                var existing = await _db.Set<DigitalCopy>().FirstOrDefaultAsync(c => c.FileHash == hash, ct);
+
+                if (existing is not null)
                 {
-                    var hash = await ComputeHashWithRetryAsync(file, ct);
-                    var existing = await _db.Set<DigitalCopy>().FirstOrDefaultAsync(c => c.FileHash == hash, ct);
-
-                    if (existing is not null)
-                    {
-                        seenCopyIds.Add(existing.Id);
-                        if (existing.FilePath != file) { existing.UpdatePath(file); report.Updated++; }
-                        else report.Skipped++;
-                        continue;
-                    }
-
+                    seenCopyIds.Add(existing.Id);
+                    if (existing.FilePath != file) { existing.UpdatePath(file); report.Updated++; }
+                    else report.Skipped++;
+                }
+                else
+                {
                     var copy = await CreateBookFromFileAsync(file, hash, folder.Id, ct);
                     seenCopyIds.Add(copy.Id);
                     report.Added++;
-
                     if (++sinceLastSave >= BatchSize) { await _db.SaveChangesAsync(ct); sinceLastSave = 0; }
                 }
-                catch (IOException)
-                {
-                    report.Failures.Add(new ScanFailure(file, "檔案使用中"));
-                }
+            }
+            catch (IOException)
+            {
+                report.Failures.Add(new ScanFailure(file, "檔案使用中"));
             }
 
-            folder.MarkScanned();
+            processed++;
+            if (onProgress is not null) await onProgress(new ScanProgress(processed, total, file));
         }
 
+        foreach (var folder in folders.Where(f => Directory.Exists(f.Path))) folder.MarkScanned();
         await _db.SaveChangesAsync(ct);
 
         // 遺失偵測：屬於啟用資料夾、未在本次掃描見到、且尚未標記遺失的數位版本
