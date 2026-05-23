@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   NButton,
@@ -59,6 +59,42 @@ const sliderPercent = computed<number>({
   get: () => percent.value ?? 0,
   set: (v) => { percent.value = v },
 })
+
+// 填了目前頁數 + 總頁數 → 自動算 %（使用者仍可手動覆蓋）
+watch([currentPage, totalPages], ([cur, tot]) => {
+  if (cur != null && tot != null && tot > 0) {
+    percent.value = Math.min(100, Math.max(0, Math.round((cur / tot) * 100)))
+  }
+})
+
+// 封面上傳（含快取破壞，上傳後強制重載 <img>）
+const coverInput = ref<HTMLInputElement | null>(null)
+const uploadingCover = ref(false)
+const coverVersion = ref(0)
+const coverSrc = computed(() =>
+  book.value ? `${coverUrl(book.value.id)}?v=${coverVersion.value}` : '',
+)
+function pickCover() {
+  coverInput.value?.click()
+}
+async function onCoverPicked(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (file && book.value) {
+    uploadingCover.value = true
+    try {
+      book.value = await booksApi.uploadCover(book.value.id, file)
+      coverFailed.value = false
+      coverVersion.value++
+      message.success('封面已更新')
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : '上傳失敗')
+    } finally {
+      uploadingCover.value = false
+    }
+  }
+  input.value = ''
+}
 
 // 新增實體版本
 const showAddCopy = ref(false)
@@ -221,12 +257,28 @@ function confirmDelete() {
         <div class="cover-col">
           <img
             v-if="book.coverPath && !coverFailed"
-            :src="coverUrl(book.id)"
+            :src="coverSrc"
             :alt="book.title"
             class="cover"
             @error="coverFailed = true"
           />
           <div v-else class="cover cover-placeholder">{{ book.title.slice(0, 1) }}</div>
+          <n-button
+            size="small"
+            quaternary
+            class="cover-upload-btn"
+            :loading="uploadingCover"
+            @click="pickCover"
+          >
+            {{ book.coverPath ? '更換封面' : '上傳封面' }}
+          </n-button>
+          <input
+            ref="coverInput"
+            type="file"
+            accept="image/*"
+            style="display: none"
+            @change="onCoverPicked"
+          />
         </div>
         <div class="info-col">
           <h1 class="title">

@@ -34,4 +34,9 @@ export const booksApi = {
     http.patch<BookDetail>(`/books/${id}/reading`, req),
   remove: (id: string) => http.del<void>(`/books/${id}`),
   rereadMetadata: (id: string) => http.post<BookDetail>(`/books/${id}/reread-metadata`),
+  uploadCover: (id: string, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return http.postForm<BookDetail>(`/books/${id}/cover`, form)
+  },
 }

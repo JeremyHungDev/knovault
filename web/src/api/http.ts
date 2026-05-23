@@ -50,12 +50,22 @@ async function request<T>(
   return (text ? JSON.parse(text) : undefined) as T
 }
 
+async function requestForm<T>(method: string, path: string, form: FormData): Promise<T> {
+  // 不設 Content-Type，讓瀏覽器自動帶 multipart boundary
+  const res = await fetch(`${BASE}${path}`, { method, body: form })
+  if (!res.ok) throw await parseError(res)
+  if (res.status === 204) return undefined as T
+  const text = await res.text()
+  return (text ? JSON.parse(text) : undefined) as T
+}
+
 export const http = {
   get: <T>(path: string, signal?: AbortSignal) => request<T>('GET', path, undefined, signal),
   post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
   put: <T>(path: string, body?: unknown) => request<T>('PUT', path, body),
   patch: <T>(path: string, body?: unknown) => request<T>('PATCH', path, body),
   del: <T>(path: string) => request<T>('DELETE', path),
+  postForm: <T>(path: string, form: FormData) => requestForm<T>('POST', path, form),
 }
 
 // 封面 / 檔案的直連 URL（瀏覽器直接走 <img>/下載）。

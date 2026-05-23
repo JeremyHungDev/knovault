@@ -78,6 +78,7 @@ export interface IsbnMetadata {
   publishedDate: string | null
   isbn: string | null
   pageCount: number | null
+  coverUrl: string | null
 }
 
 export interface ScanReport {
@@ -119,6 +120,8 @@ export interface CreatePhysicalBookRequest {
   language?: string | null
   description?: string | null
   location?: string | null
+  totalPages?: number | null
+  coverUrl?: string | null
 }
 
 export interface UpdateBookRequest {

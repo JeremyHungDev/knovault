@@ -5,6 +5,7 @@ import {
   NForm,
   NFormItem,
   NInput,
+  NInputNumber,
   NButton,
   NSpace,
   NInputGroup,
@@ -33,6 +34,8 @@ const form = reactive({
   language: '',
   description: '',
   location: '',
+  totalPages: null as number | null,
+  coverUrl: null as string | null,
 })
 
 const loading = ref(false)
@@ -76,7 +79,9 @@ async function lookupIsbn() {
     if (meta.publisher) form.publisher = meta.publisher
     if (meta.publishedDate) form.publishedDate = meta.publishedDate
     if (meta.isbn) form.isbn = meta.isbn
-    lookupNote.value = '已帶入查詢結果，可手動修改後儲存。'
+    if (meta.pageCount) form.totalPages = meta.pageCount
+    if (meta.coverUrl) form.coverUrl = meta.coverUrl
+    lookupNote.value = '已帶入查詢結果（含封面/總頁數），可手動修改後儲存。'
   } catch (e) {
     lookupNote.value = null
     message.error(
@@ -120,6 +125,8 @@ async function submit() {
         language: form.language || null,
         description: form.description || null,
         location: form.location || null,
+        totalPages: form.totalPages,
+        coverUrl: form.coverUrl,
       })
       message.success('已新增實體書')
       router.push(`/books/${created.id}`)
@@ -159,6 +166,11 @@ async function submit() {
           {{ lookupNote }}
         </n-alert>
 
+        <div v-if="form.coverUrl" class="cover-preview">
+          <img :src="form.coverUrl" alt="封面預覽" />
+          <n-button text type="error" @click="form.coverUrl = null">移除封面</n-button>
+        </div>
+
         <n-form-item label="書名 *" required>
           <n-input v-model:value="form.title" placeholder="書名" />
         </n-form-item>
@@ -181,6 +193,14 @@ async function submit() {
         </n-form-item>
         <n-form-item label="語言">
           <n-input v-model:value="form.language" placeholder="如 zh-Hant" />
+        </n-form-item>
+        <n-form-item label="總頁數">
+          <n-input-number
+            v-model:value="form.totalPages"
+            :min="1"
+            placeholder="ISBN 查詢可自動帶入"
+            style="width: 100%"
+          />
         </n-form-item>
         <n-form-item v-if="!isEdit" label="實體位置">
           <n-input v-model:value="form.location" placeholder="如 書房 B 櫃-第3層" />
@@ -220,5 +240,18 @@ async function submit() {
 }
 .note {
   margin-bottom: 12px;
+}
+.cover-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.cover-preview img {
+  width: 120px;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 </style>
