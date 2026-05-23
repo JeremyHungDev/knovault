@@ -77,6 +77,13 @@ Knovault（芝士庫）是一個自託管的個人知識管理（PKM）系統，
 - 前端：Vue 3（`<script setup>`）、Vite、Vue Router、Pinia、**Naive UI**（含暗色主題）、`vite-plugin-pwa`。
 - 登入：**單人、不需登入**（信任內網）。
 
+### SQLite 並發設定（避免 `database is locked`）
+WAL 下 SQLite 仍是**單一寫入者**：背景掃描在寫、使用者同時 PATCH 會撞 `SQLITE_BUSY`。對策：
+- 連線開 **WAL + `busy_timeout` 30 秒**（鎖定時於驅動層等待重試，而非拋錯崩潰）。
+- **寫入集中在掃描服務**，並**批次** `SaveChanges`（每 N 本一次），縮短鎖定窗口；使用者 PATCH 為偶發，靠 busy_timeout 等待即可。
+- **不使用 `Cache=Shared`**：shared-cache 主要用於共享 in-memory DB，對檔案型並發無益、反可能引發更難纏的 `SQLITE_LOCKED`。
+- 註：EF Core 的 SQLite provider 無內建重試執行策略（`EnableRetryOnFailure` 屬 SQL Server），實際靠 busy_timeout。
+
 ---
 
 ## 4. 領域模型
@@ -137,6 +144,7 @@ Book 1───1 (owned) Progress
 4. 掃描在背景非同步跑（一次一個），進度用 **SSE** 即時回報。
 5. **重掃不覆蓋使用者編輯**：元數據只在首次匯入時解析；之後重掃只更新檔案身分欄位（路徑/雜湊/大小/掃描時間）。另提供手動「從檔案重讀元數據」按鈕。
 6. **掃描預設每個新檔開一本新 Book**，不自動依 ISBN/書名合併（避免誤併）。要把版本歸到既有書（如數位書補登實體版、EPUB+PDF 合為一書）是手動動作，走詳情頁「新增版本」或新增實體書時選「歸到既有書」。靠 ISBN 自動合併留待後續子專案。
+7. **觸發方式為手動／開機掃描，不是 FileSystemWatcher 即時監看**（故「複製到一半就被搶讀」機率低）。讀檔算雜湊/解析時以 `FileShare.Read` 開啟；若檔案被占用（複製未完成）→ 等 500ms 重試最多 3 次，仍鎖住則**跳過並列入掃描報告**，下次重掃再處理。資料庫寫入**每 N 本批次** `SaveChanges`（見 §3 SQLite 並發設定）。
 
 ### 5.2 EPUB 解析（內建，無重依賴）
 - `System.IO.Compression.ZipArchive` + `System.Xml` 讀 `META-INF/container.xml` → `.opf`。
@@ -169,6 +177,8 @@ Book 1───1 (owned) Progress
 ## 6. API 設計
 
 REST / JSON，前綴 `/api`。Entity 與回傳 DTO 分離；分頁回 `{ items, total, page, pageSize }`；錯誤用 ProblemDetails (RFC 7807)；不做版本號。實作用 Minimal API，依功能分組。
+
+> **Copy 序列化（避免 TPH 型別誤用）**：`BookCopy` 不直接吐給前端；以**帶 `type`(`digital`/`physical`) 的 discriminated DTO** 回傳，mapper 端用 C# pattern matching 分流，前端拿到乾淨的強型別物件。（TPH 為單表查詢、無 join，不會過度查閱；要防的是 mapping 時誤把實體當數位讀 `FilePath`。）
 
 ### 書籍
 | 方法 | 路徑 | 說明 |
@@ -259,6 +269,8 @@ REST / JSON，前綴 `/api`。Entity 與回傳 DTO 分離；分頁回 `{ items, 
 | 解析失敗（EPUB 損壞、PDF 加密、XML 壞） | 仍以檔名為書名匯入，標 `ParseFailed`「⚠ 解析失敗」；記錄原因；繼續掃下一本 |
 | 元數據缺/亂 | fallback 檔名＋「未知作者」，可手改 |
 | 檔案移動/刪除 | 移動→更新路徑；刪除→標 `IsMissing`，不自動刪目錄項 |
+| 檔案使用中（複製未完成/被占用） | 以 `FileShare.Read` 開啟；鎖住→等 500ms 重試×3→仍鎖則跳過並列入掃描報告 |
+| 資料庫鎖定（掃描+使用者同時寫） | WAL + `busy_timeout` 30s 等待重試；寫入集中掃描服務並批次（見 §3） |
 | 重複檔（同雜湊） | 跳過、只更新路徑 |
 | ISBN 查詢失敗（網路/逾時/查無） | 10s 逾時 → 提示 → 轉手動填 |
 | PDF 第一頁算繪失敗 | fallback「書名佔位圖」 |
@@ -330,6 +342,9 @@ tests/
 | D11 | 快速雜湊（大小+前 1MB） | 去重/偵測移動足夠且快 |
 | D12 | 前端 Naive UI | Vue3 原生、輕、元件齊、暗色 |
 | D13 | 後端四層（Domain/Application/Infrastructure/Api） | 邊界清楚、強制 DB 可換 |
+| D14 | SQLite 並發：WAL + busy_timeout + 集中/批次寫入；**不用 Cache=Shared** | 避免 `database is locked`；Cache=Shared 反增 `SQLITE_LOCKED` 風險 |
+| D15 | 掃描為手動/開機觸發（非即時 watcher）；讀檔 `FileShare.Read` + 鎖定重試/跳過 | 避開複製未完成的搶讀；一個壞檔不拖垮整批 |
+| D16 | Copy 以帶 `type` 的 discriminated DTO 暴露 + pattern matching 分流 | 防 TPH 型別誤用、不把實體吐前端 |
 
 ---
 
