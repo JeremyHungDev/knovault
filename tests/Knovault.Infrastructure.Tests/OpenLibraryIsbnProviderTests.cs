@@ -30,7 +30,8 @@ public class OpenLibraryIsbnProviderTests
                 "authors": [{ "name": "Eric Evans" }],
                 "publishers": [{ "name": "Addison-Wesley" }],
                 "publish_date": "2003",
-                "number_of_pages": 560
+                "number_of_pages": 560,
+                "cover": { "small": "https://covers/s.jpg", "medium": "https://covers/m.jpg", "large": "https://covers/l.jpg" }
               }
             }
             """;
@@ -44,6 +45,7 @@ public class OpenLibraryIsbnProviderTests
         meta.Publisher.Should().Be("Addison-Wesley");
         meta.PageCount.Should().Be(560);
         meta.Isbn.Should().Be(isbn);
+        meta.CoverUrl.Should().Be("https://covers/l.jpg");
     }
 
     [Fact]

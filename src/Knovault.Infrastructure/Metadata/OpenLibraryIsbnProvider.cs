@@ -33,6 +33,14 @@ public sealed class OpenLibraryIsbnProvider : IIsbnMetadataProvider
         int? pages = book.TryGetProperty("number_of_pages", out var np) && np.TryGetInt32(out var pc)
             ? pc : null;
 
+        string? coverUrl = null;
+        if (book.TryGetProperty("cover", out var cover) && cover.ValueKind == JsonValueKind.Object)
+        {
+            coverUrl = (cover.TryGetProperty("large", out var lg) ? lg.GetString() : null)
+                ?? (cover.TryGetProperty("medium", out var md) ? md.GetString() : null)
+                ?? (cover.TryGetProperty("small", out var sm) ? sm.GetString() : null);
+        }
+
         return new ParsedBookMetadata
         {
             Title = book.TryGetProperty("title", out var t) ? t.GetString() : null,
@@ -40,7 +48,8 @@ public sealed class OpenLibraryIsbnProvider : IIsbnMetadataProvider
             Publisher = publisher,
             PublishedDate = book.TryGetProperty("publish_date", out var d) ? d.GetString() : null,
             Isbn = isbn,
-            PageCount = pages
+            PageCount = pages,
+            CoverUrl = coverUrl
         };
     }
 }
