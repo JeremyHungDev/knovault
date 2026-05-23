@@ -1,0 +1,43 @@
+# ─── .NET ───────────────────────────────────────────
+bin/
+obj/
+out/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.userprefs
+.vs/
+artifacts/
+publish/
+*.nupkg
+
+# ─── Node / Vue / Vite (web/) ────────────────────────
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─── 應用執行期資料 (不該進版控) ─────────────────────
+# Knovault 執行期會在 %AppData%\Knovault 建立資料，
+# 但若有人把它指到 repo 內，這些也要忽略：
+*.db
+*.db-shm
+*.db-wal
+covers/
+logs/
+config.json
+
+# ─── 編輯器 / 作業系統 ───────────────────────────────
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+Thumbs.db
+.DS_Store
