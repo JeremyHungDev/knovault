@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router'
 import type { BookSummary, ReadingStatus } from '@/api/types'
 import { booksApi } from '@/api/books'
 import { coverThumbUrl } from '@/api/http'
-import { authorsLine } from '@/utils/format'
+import { authorsLine, READING_STATUS_LABELS } from '@/utils/format'
 
 const props = defineProps<{ book: BookSummary }>()
 const emit = defineEmits<{ refresh: [] }>()
@@ -24,19 +24,12 @@ const progressBarStyle = computed<Record<string, string> | null>(() => {
   const { readingStatus, progressPercent } = props.book
   if (readingStatus === 'Finished')
     return { width: '100%', background: '#18a058' }
-  if (readingStatus === 'Reading' && progressPercent != null)
+  if (readingStatus === 'Reading' && progressPercent != null && progressPercent > 0)
     return { width: `${progressPercent}%`, background: '#18a058' }
   return null
 })
 
 // 三點選單 options
-const STATUS_LABELS: Record<ReadingStatus, string> = {
-  None: '未分類',
-  WantToRead: '想讀',
-  Reading: '閱讀中',
-  Finished: '已讀',
-}
-
 const dropdownOptions = computed(() => [
   { label: '編輯書目', key: 'edit' },
   {
@@ -44,8 +37,8 @@ const dropdownOptions = computed(() => [
     key: 'status',
     children: (['None', 'WantToRead', 'Reading', 'Finished'] as ReadingStatus[]).map((s) => ({
       label: props.book.readingStatus === s
-        ? `✓ ${STATUS_LABELS[s]}`
-        : STATUS_LABELS[s],
+        ? `✓ ${READING_STATUS_LABELS[s]}`
+        : READING_STATUS_LABELS[s],
       key: `status:${s}`,
     })),
   },
@@ -122,7 +115,7 @@ async function handleSelect(key: string) {
             placement="bottom-end"
             @select="handleSelect"
           >
-            <button class="menu-btn" @click.stop>⋮</button>
+            <button class="menu-btn" aria-label="書籍選項" @click.stop>⋮</button>
           </n-dropdown>
         </div>
       </div>
@@ -216,6 +209,11 @@ async function handleSelect(key: string) {
 .menu-btn:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.15);
+}
+.menu-btn:focus-visible {
+  outline: 2px solid #18a058;
+  outline-offset: 2px;
+  color: #fff;
 }
 .progress-bar {
   height: 3px;
