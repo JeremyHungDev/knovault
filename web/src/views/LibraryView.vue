@@ -123,7 +123,7 @@ async function runScan() {
       <template v-if="pageItems.length">
         <n-grid cols="2 s:3 m:4 l:5 xl:6" :x-gap="14" :y-gap="14" responsive="screen">
           <n-grid-item v-for="b in pageItems" :key="b.id">
-            <book-card :book="b" />
+            <book-card :book="b" @refresh="books.fetch()" />
           </n-grid-item>
         </n-grid>
 
