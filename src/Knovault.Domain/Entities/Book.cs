@@ -107,6 +107,11 @@ public class Book
     public void SetPhysical(bool isPhysical)
     {
         IsPhysical = isPhysical;
+        if (!isPhysical)
+        {
+            PhysicalLocation = null;
+            PhysicalNotes = null;
+        }
         Touch();
     }
 
