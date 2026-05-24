@@ -51,14 +51,4 @@ public class BookCopyTests
         act1.Should().Throw<ArgumentException>();
         act2.Should().Throw<ArgumentException>();
     }
-
-    [Fact]
-    public void PhysicalCopy_allows_null_location()
-    {
-        var copy = new PhysicalCopy();
-        copy.Location.Should().BeNull();
-
-        copy.UpdateLocation("書房 B 櫃-第3層");
-        copy.Location.Should().Be("書房 B 櫃-第3層");
-    }
 }

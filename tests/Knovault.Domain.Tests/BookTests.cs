@@ -32,17 +32,16 @@ public class BookTests
     }
 
     [Fact]
-    public void AddCopy_sets_bookId_and_flags()
+    public void AddCopy_and_SetPhysical_set_flags()
     {
         var book = NewBook();
         var digital = new DigitalCopy("C:/a.epub", BookFormat.Epub, 1, "h", DateTimeOffset.UtcNow, null);
-        var physical = new PhysicalCopy("書房");
 
         book.AddCopy(digital);
-        book.AddCopy(physical);
+        book.SetPhysical(true);
 
         digital.BookId.Should().Be(book.Id);
-        book.Copies.Should().HaveCount(2);
+        book.Copies.Should().ContainSingle();
         book.HasDigital.Should().BeTrue();
         book.HasPhysical.Should().BeTrue();
     }

@@ -56,7 +56,7 @@ public static class BookEndpoints
         var book = new Book(req.Title);
         book.SetAuthors(req.Authors);
         book.UpdateMetadata(req.Title, null, req.Language, req.Publisher, req.PublishedDate, req.Description, req.Isbn);
-        book.AddCopy(new PhysicalCopy(req.Location));
+        book.SetPhysical(true);
         if (req.TotalPages is int tp && tp > 0)
             book.SetProgress(ReadingProgress.Create(totalPages: tp));
 
@@ -99,6 +99,7 @@ public static class BookEndpoints
         if (book is null) return Results.NotFound();
         book.SetAuthors(req.Authors);
         book.UpdateMetadata(req.Title, req.Subtitle, req.Language, req.Publisher, req.PublishedDate, req.Description, req.Isbn);
+        book.SetPhysical(req.IsPhysical);
         await db.SaveChangesAsync();
         return Results.Ok(book.ToDetailDto());
     }

@@ -20,14 +20,14 @@ public class BookEndpointsTests : IClassFixture<TestApiFactory>
         {
             Title = "實體測試書",
             Authors = new() { "某作者" },
-            Location = "書房 A-1",
             Isbn = "9789999999999"
         };
         var createResp = await client.PostAsJsonAsync("/api/books", create);
         createResp.StatusCode.Should().Be(HttpStatusCode.Created);
         var created = await createResp.Content.ReadFromJsonAsync<BookDetailDto>();
         created!.Title.Should().Be("實體測試書");
-        created.Copies.Should().ContainSingle(c => c.Type == "physical" && c.Location == "書房 A-1");
+        created.IsPhysical.Should().BeTrue();
+        created.Copies.Should().BeEmpty();
 
         var list = await client.GetFromJsonAsync<PagedResult<BookSummaryDto>>("/api/books");
         list!.Total.Should().Be(1);

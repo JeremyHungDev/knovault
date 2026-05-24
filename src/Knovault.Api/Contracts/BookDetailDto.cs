@@ -16,6 +16,8 @@ public sealed record BookDetailDto
     public int? ProgressPercent { get; init; }
     public int? CurrentPage { get; init; }
     public int? TotalPages { get; init; }
+    public bool HasDigital { get; init; }
+    public bool IsPhysical { get; init; }
     public IReadOnlyList<string> Tags { get; init; } = Array.Empty<string>();
     public IReadOnlyList<CopyDto> Copies { get; init; } = Array.Empty<CopyDto>();
 }

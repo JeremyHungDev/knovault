@@ -2,8 +2,6 @@
 
 export type ReadingStatus = 'None' | 'WantToRead' | 'Reading' | 'Finished'
 
-export type CopyType = 'digital' | 'physical'
-
 export interface PagedResult<T> {
   items: T[]
   total: number
@@ -22,14 +20,13 @@ export interface BookSummary {
   hasPhysical: boolean
 }
 
+// 形式重構後 copy 僅代表數位檔（實體已改為 Book.isPhysical 旗標）。
 export interface Copy {
   id: string
-  type: CopyType
-  format: string | null // digital: "Epub" | "Pdf"
-  fileSizeBytes: number | null // digital
-  isMissing: boolean | null // digital
-  parseFailed: boolean | null // digital
-  location: string | null // physical
+  format: string // "Epub" | "Pdf"
+  fileSizeBytes: number
+  isMissing: boolean
+  parseFailed: boolean
 }
 
 export interface BookDetail {
@@ -47,6 +44,8 @@ export interface BookDetail {
   progressPercent: number | null
   currentPage: number | null
   totalPages: number | null
+  hasDigital: boolean
+  isPhysical: boolean
   tags: string[]
   copies: Copy[]
 }
@@ -119,7 +118,6 @@ export interface CreatePhysicalBookRequest {
   publishedDate?: string | null
   language?: string | null
   description?: string | null
-  location?: string | null
   totalPages?: number | null
   coverUrl?: string | null
 }
@@ -133,6 +131,7 @@ export interface UpdateBookRequest {
   publishedDate?: string | null
   description?: string | null
   isbn?: string | null
+  isPhysical: boolean
 }
 
 export interface UpdateReadingRequest {
@@ -140,16 +139,6 @@ export interface UpdateReadingRequest {
   percent?: number | null
   currentPage?: number | null
   totalPages?: number | null
-}
-
-export interface AddPhysicalCopyRequest {
-  location?: string | null
-  notes?: string | null
-}
-
-export interface UpdateCopyRequest {
-  location?: string | null
-  notes?: string | null
 }
 
 export interface CreateFolderRequest {

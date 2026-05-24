@@ -26,7 +26,7 @@ public class PersistenceIntegrationTests
             book.SetProgress(ReadingProgress.Create(percent: 40, currentPage: 200, totalPages: 500));
             book.AddCopy(new DigitalCopy("D:/books/ddd.epub", BookFormat.Epub, 2048, "hashA",
                 DateTimeOffset.UtcNow, null));
-            book.AddCopy(new PhysicalCopy("書房 B 櫃-第3層"));
+            book.SetPhysical(true);
             book.AddTag(new Tag("設計"));
             bookId = book.Id;
 
@@ -49,9 +49,9 @@ public class PersistenceIntegrationTests
             loaded.Progress.Percent.Should().Be(40);
             loaded.Progress.TotalPages.Should().Be(500);
             loaded.Copies.OfType<DigitalCopy>().Should().ContainSingle(c => c.FilePath == "D:/books/ddd.epub");
-            loaded.Copies.OfType<PhysicalCopy>().Should().ContainSingle(c => c.Location == "書房 B 櫃-第3層");
             loaded.Tags.Should().ContainSingle(t => t.Name == "設計");
             loaded.HasDigital.Should().BeTrue();
+            loaded.IsPhysical.Should().BeTrue();
             loaded.HasPhysical.Should().BeTrue();
         }
     }

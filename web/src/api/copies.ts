@@ -1,9 +1,6 @@
 import { http } from './http'
-import type { AddPhysicalCopyRequest, BookDetail, UpdateCopyRequest } from './types'
 
+// 形式重構後 copy 僅代表數位檔：只保留刪除（下載走 copyFileUrl 直連）。
 export const copiesApi = {
-  addPhysical: (bookId: string, req: AddPhysicalCopyRequest) =>
-    http.post<BookDetail>(`/books/${bookId}/copies`, req),
-  update: (copyId: string, req: UpdateCopyRequest) => http.put<void>(`/copies/${copyId}`, req),
   remove: (copyId: string) => http.del<void>(`/copies/${copyId}`),
 }

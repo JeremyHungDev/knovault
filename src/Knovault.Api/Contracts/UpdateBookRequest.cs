@@ -10,4 +10,5 @@ public sealed record UpdateBookRequest
     public string? PublishedDate { get; init; }
     public string? Description { get; init; }
     public string? Isbn { get; init; }
+    public bool IsPhysical { get; init; }
 }

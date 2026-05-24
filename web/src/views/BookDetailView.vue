@@ -16,7 +16,7 @@ import {
   NThing,
   NPopconfirm,
   NInput,
-  NModal,
+  NSwitch,
   NEmpty,
   useMessage,
   useDialog,
@@ -104,11 +104,6 @@ async function onCoverPicked(e: Event) {
   input.value = ''
 }
 
-// 新增實體版本
-const showAddCopy = ref(false)
-const newCopyLocation = ref('')
-const newCopyNotes = ref('')
-
 async function load() {
   loading.value = true
   error.value = null
@@ -137,9 +132,8 @@ const availableTags = computed(() =>
   allTags.value.filter((t) => !assignedTagSet.value.has(t.name)),
 )
 
-function copyTypeLabel(c: Copy): string {
-  if (c.type === 'physical') return '📚 實體'
-  return c.format?.toUpperCase() === 'PDF' ? '📄 PDF' : '📱 EPUB'
+function copyFormatLabel(c: Copy): string {
+  return c.format.toUpperCase() === 'PDF' ? '📄 PDF' : '📱 EPUB'
 }
 
 async function saveReading() {
@@ -212,20 +206,25 @@ async function removeCopy(copy: Copy) {
   }
 }
 
-async function addPhysicalCopy() {
+// 實體只是紀錄：切換 Book.isPhysical 旗標（沿用既有書目欄位更新）
+async function togglePhysical(value: boolean) {
   if (!book.value) return
+  const b = book.value
   try {
-    const updated = await copiesApi.addPhysical(book.value.id, {
-      location: newCopyLocation.value || null,
-      notes: newCopyNotes.value || null,
+    book.value = await booksApi.update(b.id, {
+      title: b.title,
+      subtitle: b.subtitle,
+      authors: [...b.authors],
+      language: b.language,
+      publisher: b.publisher,
+      publishedDate: b.publishedDate,
+      description: b.description,
+      isbn: b.isbn,
+      isPhysical: value,
     })
-    book.value = updated
-    showAddCopy.value = false
-    newCopyLocation.value = ''
-    newCopyNotes.value = ''
-    message.success('已新增實體版本')
+    message.success(value ? '已標記為實體' : '已取消實體標記')
   } catch (e) {
-    message.error(e instanceof Error ? e.message : '新增失敗')
+    message.error(e instanceof Error ? e.message : '更新失敗')
   }
 }
 
@@ -401,70 +400,54 @@ function confirmDelete() {
         <p class="description">{{ book.description }}</p>
       </template>
 
-      <n-divider>我擁有的版本</n-divider>
-      <n-list bordered>
-        <n-list-item v-for="c in book.copies" :key="c.id">
-          <n-thing>
-            <template #header>
-              {{ copyTypeLabel(c) }}
-              <span v-if="c.fileSizeBytes != null" class="dim">
-                {{ formatFileSize(c.fileSizeBytes) }}
-              </span>
-              <n-tag v-if="c.isMissing" type="error" size="small" :bordered="false">
-                ⚠ 檔案遺失
-              </n-tag>
-              <n-tag v-if="c.parseFailed" type="warning" size="small" :bordered="false">
-                ⚠ 解析失敗
-              </n-tag>
-            </template>
-            <template #description>
-              <span v-if="c.type === 'physical'">位置：{{ c.location || '未設定' }}</span>
-            </template>
-          </n-thing>
-          <template #suffix>
-            <n-space>
-              <n-button
-                v-if="c.type === 'digital' && !c.isMissing"
-                size="small"
-                @click="download(c)"
-              >
-                下載 / 開啟
-              </n-button>
-              <n-popconfirm @positive-click="removeCopy(c)">
-                <template #trigger>
-                  <n-button size="small" quaternary type="error">移除</n-button>
-                </template>
-                確定移除此版本？（不刪硬碟檔）
-              </n-popconfirm>
-            </n-space>
-          </template>
-        </n-list-item>
-      </n-list>
-      <div class="add-copy">
-        <n-button dashed @click="showAddCopy = true">＋ 新增實體版本</n-button>
+      <n-divider>形式（只是紀錄）</n-divider>
+      <div class="form-row">
+        <n-tag v-if="book.hasDigital" type="info" :bordered="false">📱 電子</n-tag>
+        <n-tag v-if="book.isPhysical" type="success" :bordered="false">📚 實體</n-tag>
+        <span v-if="!book.hasDigital && !book.isPhysical" class="dim">尚未標記形式</span>
+        <span class="form-spacer" />
+        <span class="dim">標記實體</span>
+        <n-switch :value="book.isPhysical" @update:value="togglePhysical" />
       </div>
+
+      <template v-if="book.hasDigital">
+        <n-divider>數位檔</n-divider>
+        <n-list bordered>
+          <n-list-item v-for="c in book.copies" :key="c.id">
+            <n-thing>
+              <template #header>
+                {{ copyFormatLabel(c) }}
+                <span class="dim">{{ formatFileSize(c.fileSizeBytes) }}</span>
+                <n-tag v-if="c.isMissing" type="error" size="small" :bordered="false">
+                  ⚠ 檔案遺失
+                </n-tag>
+                <n-tag v-if="c.parseFailed" type="warning" size="small" :bordered="false">
+                  ⚠ 解析失敗
+                </n-tag>
+              </template>
+            </n-thing>
+            <template #suffix>
+              <n-space>
+                <n-button v-if="!c.isMissing" size="small" @click="download(c)">
+                  下載 / 開啟
+                </n-button>
+                <n-popconfirm @positive-click="removeCopy(c)">
+                  <template #trigger>
+                    <n-button size="small" quaternary type="error">移除</n-button>
+                  </template>
+                  確定移除此數位檔紀錄？（不刪硬碟檔）
+                </n-popconfirm>
+              </n-space>
+            </template>
+          </n-list-item>
+        </n-list>
+      </template>
 
       <n-divider>目錄 TOC</n-divider>
       <n-empty
         size="small"
         description="後端目前未在詳情 API 暴露 TOC，待後續補上。"
       />
-
-      <n-modal
-        v-model:show="showAddCopy"
-        preset="card"
-        title="新增實體版本"
-        style="max-width: 420px"
-      >
-        <n-space vertical>
-          <n-input v-model:value="newCopyLocation" placeholder="位置（如：書房 B 櫃-第3層）" />
-          <n-input v-model:value="newCopyNotes" placeholder="備註（選填）" />
-          <n-space justify="end">
-            <n-button @click="showAddCopy = false">取消</n-button>
-            <n-button type="primary" @click="addPhysicalCopy">新增</n-button>
-          </n-space>
-        </n-space>
-      </n-modal>
     </template>
   </n-spin>
 </template>
@@ -474,6 +457,14 @@ function confirmDelete() {
   display: flex;
   justify-content: space-between;
   margin-bottom: 16px;
+}
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-spacer {
+  flex: 1 1 auto;
 }
 .header {
   display: flex;

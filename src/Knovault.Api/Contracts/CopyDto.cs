@@ -1,12 +1,11 @@
 namespace Knovault.Api.Contracts;
 
+// 形式重構後 copy 僅代表數位檔（實體已改為 Book.IsPhysical 旗標）。
 public sealed record CopyDto
 {
     public Guid Id { get; init; }
-    public string Type { get; init; } = "";        // "digital" | "physical"
-    public string? Format { get; init; }            // digital
-    public long? FileSizeBytes { get; init; }       // digital
-    public bool? IsMissing { get; init; }           // digital
-    public bool? ParseFailed { get; init; }         // digital
-    public string? Location { get; init; }          // physical
+    public string Format { get; init; } = "";       // "Epub" | "Pdf"
+    public long FileSizeBytes { get; init; }
+    public bool IsMissing { get; init; }
+    public bool ParseFailed { get; init; }
 }

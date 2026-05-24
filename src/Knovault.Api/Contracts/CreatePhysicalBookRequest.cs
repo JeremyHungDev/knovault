@@ -9,7 +9,6 @@ public sealed record CreatePhysicalBookRequest
     public string? PublishedDate { get; init; }
     public string? Language { get; init; }
     public string? Description { get; init; }
-    public string? Location { get; init; }
     public int? TotalPages { get; init; }
     public string? CoverUrl { get; init; }
 }

@@ -33,9 +33,9 @@ const form = reactive({
   publishedDate: '',
   language: '',
   description: '',
-  location: '',
   totalPages: null as number | null,
   coverUrl: null as string | null,
+  isPhysical: false,
 })
 
 const loading = ref(false)
@@ -56,6 +56,7 @@ onMounted(async () => {
       form.publishedDate = b.publishedDate ?? ''
       form.language = b.language ?? ''
       form.description = b.description ?? ''
+      form.isPhysical = b.isPhysical
     } catch (e) {
       message.error(e instanceof Error ? e.message : '載入失敗')
     } finally {
@@ -114,6 +115,7 @@ async function submit() {
         publishedDate: form.publishedDate || null,
         description: form.description || null,
         isbn,
+        isPhysical: form.isPhysical,
       })
       message.success('已儲存')
       router.push(`/books/${updated.id}`)
@@ -126,7 +128,6 @@ async function submit() {
         publishedDate: form.publishedDate || null,
         language: form.language || null,
         description: form.description || null,
-        location: form.location || null,
         totalPages: form.totalPages,
         coverUrl: form.coverUrl,
       })
@@ -203,9 +204,6 @@ async function submit() {
             placeholder="ISBN 查詢可自動帶入"
             style="width: 100%"
           />
-        </n-form-item>
-        <n-form-item v-if="!isEdit" label="實體位置">
-          <n-input v-model:value="form.location" placeholder="如 書房 B 櫃-第3層" />
         </n-form-item>
         <n-form-item label="簡介">
           <n-input

@@ -16,6 +16,8 @@ public class Book
     public string? CoverPath { get; private set; }
     public ReadingStatus ReadingStatus { get; private set; }
     public ReadingProgress Progress { get; private set; }
+    // 形式只是紀錄：實體 = 一個旗標（無位置/版本管理）；電子 = 是否有數位檔
+    public bool IsPhysical { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
@@ -29,7 +31,7 @@ public class Book
     public IReadOnlyList<Tag> Tags => _tags;
 
     public bool HasDigital => _copies.Any(c => c is DigitalCopy);
-    public bool HasPhysical => _copies.Any(c => c is PhysicalCopy);
+    public bool HasPhysical => IsPhysical;
 
     private Book() { Title = null!; Progress = ReadingProgress.Empty; } // EF
 
@@ -97,6 +99,12 @@ public class Book
     public void SetCoverPath(string? coverPath)
     {
         CoverPath = coverPath;
+        Touch();
+    }
+
+    public void SetPhysical(bool isPhysical)
+    {
+        IsPhysical = isPhysical;
         Touch();
     }
 

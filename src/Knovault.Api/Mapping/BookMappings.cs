@@ -33,27 +33,18 @@ public static class BookMappings
         ProgressPercent = b.Progress.Percent,
         CurrentPage = b.Progress.CurrentPage,
         TotalPages = b.Progress.TotalPages,
+        HasDigital = b.HasDigital,
+        IsPhysical = b.IsPhysical,
         Tags = b.Tags.Select(t => t.Name).ToList(),
-        Copies = b.Copies.Select(ToCopyDto).ToList()
+        Copies = b.Copies.OfType<DigitalCopy>().Select(ToCopyDto).ToList()
     };
 
-    private static CopyDto ToCopyDto(BookCopy c) => c switch
+    private static CopyDto ToCopyDto(DigitalCopy d) => new()
     {
-        DigitalCopy d => new CopyDto
-        {
-            Id = d.Id,
-            Type = "digital",
-            Format = d.Format.ToString(),
-            FileSizeBytes = d.FileSizeBytes,
-            IsMissing = d.IsMissing,
-            ParseFailed = d.ParseFailed
-        },
-        PhysicalCopy p => new CopyDto
-        {
-            Id = p.Id,
-            Type = "physical",
-            Location = p.Location
-        },
-        _ => new CopyDto { Id = c.Id, Type = "unknown" }
+        Id = d.Id,
+        Format = d.Format.ToString(),
+        FileSizeBytes = d.FileSizeBytes,
+        IsMissing = d.IsMissing,
+        ParseFailed = d.ParseFailed
     };
 }
