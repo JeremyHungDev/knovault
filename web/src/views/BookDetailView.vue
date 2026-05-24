@@ -219,6 +219,7 @@ function openAddPhysical() {
 }
 
 function openEditPhysical() {
+  if (!book.value) return
   physicalForm.value = {
     location: book.value?.physicalLocation ?? '',
     notes: book.value?.physicalNotes ?? '',
@@ -227,7 +228,7 @@ function openEditPhysical() {
 }
 
 async function savePhysical() {
-  if (!book.value) return
+  if (!book.value || savingPhysical.value) return
   savingPhysical.value = true
   try {
     const req: UpdatePhysicalRequest = {
@@ -420,7 +421,6 @@ function confirmDelete() {
       <!-- 版本面板 -->
       <n-divider>版本</n-divider>
       <div class="versions-toolbar">
-        <span />
         <n-button
           v-if="!book.isPhysical"
           size="small"
