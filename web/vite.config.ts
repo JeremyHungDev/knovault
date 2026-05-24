@@ -31,6 +31,9 @@ export default defineConfig({
         // 不要把 API 請求快取成離線；只快取 SPA 靜態資產。
         navigateFallbackDenylist: [/^\/api\//],
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'],
+        // 新版立即接管，避免使用者看到舊的快取版本（自託管更新後立刻生效）。
+        skipWaiting: true,
+        clientsClaim: true,
       },
       // 開發時不啟用 SW，避免干擾 proxy。
       devOptions: { enabled: false },
