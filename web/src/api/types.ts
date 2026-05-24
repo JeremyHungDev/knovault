@@ -46,6 +46,8 @@ export interface BookDetail {
   totalPages: number | null
   hasDigital: boolean
   isPhysical: boolean
+  physicalLocation: string | null
+  physicalNotes: string | null
   tags: string[]
   copies: Copy[]
 }
@@ -139,6 +141,12 @@ export interface UpdateReadingRequest {
   percent?: number | null
   currentPage?: number | null
   totalPages?: number | null
+}
+
+export interface UpdatePhysicalRequest {
+  isPhysical: boolean
+  location?: string | null
+  notes?: string | null
 }
 
 export interface CreateFolderRequest {

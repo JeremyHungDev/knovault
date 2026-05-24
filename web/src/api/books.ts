@@ -5,6 +5,7 @@ import type {
   CreatePhysicalBookRequest,
   PagedResult,
   UpdateBookRequest,
+  UpdatePhysicalRequest,
   UpdateReadingRequest,
 } from './types'
 
@@ -32,6 +33,8 @@ export const booksApi = {
   update: (id: string, req: UpdateBookRequest) => http.put<BookDetail>(`/books/${id}`, req),
   updateReading: (id: string, req: UpdateReadingRequest) =>
     http.patch<BookDetail>(`/books/${id}/reading`, req),
+  updatePhysical: (id: string, req: UpdatePhysicalRequest) =>
+    http.patch<BookDetail>(`/books/${id}/physical`, req),
   remove: (id: string) => http.del<void>(`/books/${id}`),
   rereadMetadata: (id: string) => http.post<BookDetail>(`/books/${id}/reread-metadata`),
   uploadCover: (id: string, file: File) => {
