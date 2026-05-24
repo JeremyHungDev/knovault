@@ -18,6 +18,8 @@ public class Book
     public ReadingProgress Progress { get; private set; }
     // 形式只是紀錄：實體 = 一個旗標（無位置/版本管理）；電子 = 是否有數位檔
     public bool IsPhysical { get; private set; }
+    public string? PhysicalLocation { get; private set; }
+    public string? PhysicalNotes { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
@@ -105,6 +107,14 @@ public class Book
     public void SetPhysical(bool isPhysical)
     {
         IsPhysical = isPhysical;
+        Touch();
+    }
+
+    public void SetPhysicalInfo(bool isPhysical, string? location, string? notes)
+    {
+        IsPhysical = isPhysical;
+        PhysicalLocation = isPhysical ? location?.Trim() : null;
+        PhysicalNotes = isPhysical ? notes?.Trim() : null;
         Touch();
     }
 

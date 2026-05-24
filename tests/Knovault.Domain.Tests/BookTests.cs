@@ -88,4 +88,28 @@ public class BookTests
         var act = () => book.UpdateMetadata("", null, null, null, null, null, null);
         act.Should().Throw<ArgumentException>();
     }
+
+    [Fact]
+    public void SetPhysicalInfo_with_true_sets_location_and_notes()
+    {
+        var book = NewBook();
+        book.SetPhysicalInfo(true, "書房 B 櫃-第3層", "借給小明");
+
+        book.IsPhysical.Should().BeTrue();
+        book.PhysicalLocation.Should().Be("書房 B 櫃-第3層");
+        book.PhysicalNotes.Should().Be("借給小明");
+        book.HasPhysical.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SetPhysicalInfo_with_false_clears_location_and_notes()
+    {
+        var book = NewBook();
+        book.SetPhysicalInfo(true, "書房 A 櫃", "備註");
+        book.SetPhysicalInfo(false, null, null);
+
+        book.IsPhysical.Should().BeFalse();
+        book.PhysicalLocation.Should().BeNull();
+        book.PhysicalNotes.Should().BeNull();
+    }
 }
