@@ -255,23 +255,31 @@ function confirmDelete() {
 
       <div class="header">
         <div class="cover-col">
-          <img
-            v-if="book.coverPath && !coverFailed"
-            :src="coverSrc"
-            :alt="book.title"
-            class="cover"
-            @error="coverFailed = true"
-          />
-          <div v-else class="cover cover-placeholder">{{ book.title.slice(0, 1) }}</div>
-          <n-button
-            size="small"
-            quaternary
-            class="cover-upload-btn"
-            :loading="uploadingCover"
+          <div
+            class="cover-clickable"
+            :class="{ 'is-empty': !book.coverPath || coverFailed }"
+            role="button"
+            tabindex="0"
+            title="點擊上傳 / 更換封面"
             @click="pickCover"
+            @keydown.enter="pickCover"
           >
-            {{ book.coverPath ? '更換封面' : '上傳封面' }}
-          </n-button>
+            <img
+              v-if="book.coverPath && !coverFailed"
+              :src="coverSrc"
+              :alt="book.title"
+              class="cover"
+              @error="coverFailed = true"
+            />
+            <div v-else class="cover cover-placeholder">{{ book.title.slice(0, 1) }}</div>
+            <div class="cover-overlay">
+              <span v-if="!book.coverPath || coverFailed" class="cover-plus">＋</span>
+              <span class="cover-overlay-text">
+                {{ book.coverPath && !coverFailed ? '更換封面' : '上傳封面' }}
+              </span>
+            </div>
+            <div v-if="uploadingCover" class="cover-loading"><n-spin size="small" /></div>
+          </div>
           <input
             ref="coverInput"
             type="file"
@@ -467,7 +475,15 @@ function confirmDelete() {
 .cover-col {
   flex: 0 0 200px;
 }
+.cover-clickable {
+  position: relative;
+  width: 200px;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+}
 .cover {
+  display: block;
   width: 200px;
   aspect-ratio: 3 / 4;
   object-fit: cover;
@@ -480,6 +496,46 @@ function confirmDelete() {
   justify-content: center;
   font-size: 60px;
   color: rgba(128, 128, 128, 0.5);
+}
+.cover-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.cover-clickable:hover .cover-overlay,
+.cover-clickable:focus-visible .cover-overlay {
+  opacity: 1;
+}
+/* 無封面時讓 ＋ 一直顯示，提示可點擊上傳 */
+.cover-clickable.is-empty .cover-overlay {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.25);
+}
+.cover-plus {
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 300;
+}
+.cover-overlay-text {
+  font-size: 13px;
+}
+.cover-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
 }
 .info-col {
   flex: 1 1 360px;
