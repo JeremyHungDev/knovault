@@ -67,6 +67,14 @@ watch([currentPage, totalPages], ([cur, tot]) => {
   }
 })
 
+// 有閱讀進度時，自動把狀態切到「閱讀中」（除非已是想讀以外的狀態）
+watch([percent, currentPage], ([p, cur]) => {
+  const hasProgress = (p != null && p > 0) || (cur != null && cur > 0)
+  if (hasProgress && (status.value === 'None' || status.value === 'WantToRead')) {
+    status.value = 'Reading'
+  }
+})
+
 // 封面上傳（含快取破壞，上傳後強制重載 <img>）
 const coverInput = ref<HTMLInputElement | null>(null)
 const uploadingCover = ref(false)

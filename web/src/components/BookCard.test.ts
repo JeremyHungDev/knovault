@@ -35,7 +35,7 @@ describe('BookCard', () => {
     expect(w.text()).toContain('深度工作')
     expect(w.text()).toContain('Cal Newport')
     expect(w.text()).toContain('45%')
-    expect(w.text()).toContain('在讀')
+    expect(w.text()).toContain('閱讀中')
   })
 
   it('shows placeholder when no cover', () => {

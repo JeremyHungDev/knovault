@@ -38,7 +38,7 @@ describe('authorsLine', () => {
 
 describe('reading status helpers', () => {
   it('labels statuses', () => {
-    expect(readingStatusLabel('Reading')).toBe('在讀')
+    expect(readingStatusLabel('Reading')).toBe('閱讀中')
     expect(readingStatusLabel('Finished')).toBe('讀完')
     expect(readingStatusLabel('None')).toBe('未標記')
     expect(readingStatusLabel(null)).toBe('未標記')

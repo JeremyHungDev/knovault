@@ -13,14 +13,14 @@ export function formatFileSize(bytes: number | null | undefined): string {
 export const READING_STATUS_LABELS: Record<ReadingStatus, string> = {
   None: '未標記',
   WantToRead: '想讀',
-  Reading: '在讀',
+  Reading: '閱讀中',
   Finished: '讀完',
 }
 
 export const READING_STATUS_OPTIONS: { label: string; value: ReadingStatus }[] = [
   { label: '未標記', value: 'None' },
   { label: '想讀', value: 'WantToRead' },
-  { label: '在讀', value: 'Reading' },
+  { label: '閱讀中', value: 'Reading' },
   { label: '讀完', value: 'Finished' },
 ]
 
