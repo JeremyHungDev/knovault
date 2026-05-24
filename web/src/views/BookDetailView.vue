@@ -16,7 +16,9 @@ import {
   NThing,
   NPopconfirm,
   NInput,
-  NSwitch,
+  NModal,
+  NForm,
+  NFormItem,
   NEmpty,
   useMessage,
   useDialog,
@@ -25,7 +27,7 @@ import { booksApi } from '@/api/books'
 import { copiesApi } from '@/api/copies'
 import { tagsApi } from '@/api/tags'
 import { copyFileUrl, coverUrl } from '@/api/http'
-import type { BookDetail, Copy, ReadingStatus } from '@/api/types'
+import type { BookDetail, Copy, ReadingStatus, UpdatePhysicalRequest } from '@/api/types'
 import { useTagsStore } from '@/stores/tags'
 import { storeToRefs } from 'pinia'
 import {
@@ -206,25 +208,40 @@ async function removeCopy(copy: Copy) {
   }
 }
 
-// 實體只是紀錄：切換 Book.isPhysical 旗標（沿用既有書目欄位更新）
-async function togglePhysical(value: boolean) {
+// 版本面板 — 實體版本 modal
+const showPhysicalModal = ref(false)
+const physicalForm = ref({ location: '', notes: '' })
+const savingPhysical = ref(false)
+
+function openAddPhysical() {
+  physicalForm.value = { location: '', notes: '' }
+  showPhysicalModal.value = true
+}
+
+function openEditPhysical() {
+  physicalForm.value = {
+    location: book.value?.physicalLocation ?? '',
+    notes: book.value?.physicalNotes ?? '',
+  }
+  showPhysicalModal.value = true
+}
+
+async function savePhysical() {
   if (!book.value) return
-  const b = book.value
+  savingPhysical.value = true
   try {
-    book.value = await booksApi.update(b.id, {
-      title: b.title,
-      subtitle: b.subtitle,
-      authors: [...b.authors],
-      language: b.language,
-      publisher: b.publisher,
-      publishedDate: b.publishedDate,
-      description: b.description,
-      isbn: b.isbn,
-      isPhysical: value,
-    })
-    message.success(value ? '已標記為實體' : '已取消實體標記')
+    const req: UpdatePhysicalRequest = {
+      isPhysical: true,
+      location: physicalForm.value.location || null,
+      notes: physicalForm.value.notes || null,
+    }
+    book.value = await booksApi.updatePhysical(book.value.id, req)
+    showPhysicalModal.value = false
+    message.success('已更新實體版本')
   } catch (e) {
     message.error(e instanceof Error ? e.message : '更新失敗')
+  } finally {
+    savingPhysical.value = false
   }
 }
 
@@ -400,54 +417,101 @@ function confirmDelete() {
         <p class="description">{{ book.description }}</p>
       </template>
 
-      <n-divider>形式（只是紀錄）</n-divider>
-      <div class="form-row">
-        <n-tag v-if="book.hasDigital" type="info" :bordered="false">📱 電子</n-tag>
-        <n-tag v-if="book.isPhysical" type="success" :bordered="false">📚 實體</n-tag>
-        <span v-if="!book.hasDigital && !book.isPhysical" class="dim">尚未標記形式</span>
-        <span class="form-spacer" />
-        <span class="dim">標記實體</span>
-        <n-switch :value="book.isPhysical" @update:value="togglePhysical" />
+      <!-- 版本面板 -->
+      <n-divider>版本</n-divider>
+      <div class="versions-toolbar">
+        <span />
+        <n-button
+          v-if="!book.isPhysical"
+          size="small"
+          @click="openAddPhysical"
+        >
+          ＋ 新增實體版本
+        </n-button>
       </div>
 
-      <template v-if="book.hasDigital">
-        <n-divider>數位檔</n-divider>
-        <n-list bordered>
-          <n-list-item v-for="c in book.copies" :key="c.id">
-            <n-thing>
-              <template #header>
-                {{ copyFormatLabel(c) }}
-                <span class="dim">{{ formatFileSize(c.fileSizeBytes) }}</span>
-                <n-tag v-if="c.isMissing" type="error" size="small" :bordered="false">
-                  ⚠ 檔案遺失
-                </n-tag>
-                <n-tag v-if="c.parseFailed" type="warning" size="small" :bordered="false">
-                  ⚠ 解析失敗
-                </n-tag>
-              </template>
-            </n-thing>
-            <template #suffix>
-              <n-space>
-                <n-button v-if="!c.isMissing" size="small" @click="download(c)">
-                  下載 / 開啟
-                </n-button>
-                <n-popconfirm @positive-click="removeCopy(c)">
-                  <template #trigger>
-                    <n-button size="small" quaternary type="error">移除</n-button>
-                  </template>
-                  確定移除此數位檔紀錄？（不刪硬碟檔）
-                </n-popconfirm>
-              </n-space>
-            </template>
-          </n-list-item>
-        </n-list>
-      </template>
-
-      <n-divider>目錄 TOC</n-divider>
       <n-empty
+        v-if="!book.isPhysical && book.copies.length === 0"
         size="small"
-        description="後端目前未在詳情 API 暴露 TOC，待後續補上。"
+        description="尚無版本，可新增實體版本或掃描書庫資料夾"
       />
+
+      <n-list v-else bordered>
+        <!-- 實體列 -->
+        <n-list-item v-if="book.isPhysical">
+          <n-thing>
+            <template #header>🏠 實體書</template>
+            <template #description>
+              <div v-if="book.physicalLocation" class="copy-meta">
+                📍 {{ book.physicalLocation }}
+              </div>
+              <div v-if="book.physicalNotes" class="copy-meta">
+                📝 {{ book.physicalNotes }}
+              </div>
+            </template>
+          </n-thing>
+          <template #suffix>
+            <n-button size="small" @click="openEditPhysical">📝 編輯</n-button>
+          </template>
+        </n-list-item>
+
+        <!-- 數位檔列 -->
+        <n-list-item v-for="c in book.copies" :key="c.id">
+          <n-thing>
+            <template #header>
+              {{ copyFormatLabel(c) }}
+              <span class="dim">{{ formatFileSize(c.fileSizeBytes) }}</span>
+              <n-tag v-if="c.isMissing" type="error" size="small" :bordered="false">
+                ⚠ 檔案遺失
+              </n-tag>
+              <n-tag v-if="c.parseFailed" type="warning" size="small" :bordered="false">
+                ⚠ 解析失敗
+              </n-tag>
+            </template>
+          </n-thing>
+          <template #suffix>
+            <n-space>
+              <n-button v-if="!c.isMissing" size="small" @click="download(c)">
+                📥 下載
+              </n-button>
+              <n-popconfirm @positive-click="removeCopy(c)">
+                <template #trigger>
+                  <n-button size="small" quaternary type="error">移除</n-button>
+                </template>
+                確定移除此數位檔紀錄？（不刪硬碟檔）
+              </n-popconfirm>
+            </n-space>
+          </template>
+        </n-list-item>
+      </n-list>
+
+      <!-- 新增 / 編輯實體版本 modal -->
+      <n-modal
+        v-model:show="showPhysicalModal"
+        preset="dialog"
+        title="實體版本資訊"
+        positive-text="確認"
+        negative-text="取消"
+        :loading="savingPhysical"
+        @positive-click="savePhysical"
+      >
+        <n-form label-placement="left" label-width="80">
+          <n-form-item label="📍 館藏位置">
+            <n-input
+              v-model:value="physicalForm.location"
+              placeholder="例：書房 B 櫃-第3層（選填）"
+              clearable
+            />
+          </n-form-item>
+          <n-form-item label="📝 備註">
+            <n-input
+              v-model:value="physicalForm.notes"
+              placeholder="例：借給小明（選填）"
+              clearable
+            />
+          </n-form-item>
+        </n-form>
+      </n-modal>
     </template>
   </n-spin>
 </template>
@@ -458,13 +522,15 @@ function confirmDelete() {
   justify-content: space-between;
   margin-bottom: 16px;
 }
-.form-row {
+.versions-toolbar {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  margin-bottom: 8px;
 }
-.form-spacer {
-  flex: 1 1 auto;
+.copy-meta {
+  font-size: 13px;
+  opacity: 0.8;
+  margin-top: 2px;
 }
 .header {
   display: flex;
