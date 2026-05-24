@@ -35,6 +35,8 @@ public static class BookMappings
         TotalPages = b.Progress.TotalPages,
         HasDigital = b.HasDigital,
         IsPhysical = b.IsPhysical,
+        PhysicalLocation = b.PhysicalLocation,
+        PhysicalNotes = b.PhysicalNotes,
         Tags = b.Tags.Select(t => t.Name).ToList(),
         Copies = b.Copies.OfType<DigitalCopy>().Select(ToCopyDto).ToList()
     };

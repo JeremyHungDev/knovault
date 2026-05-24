@@ -18,6 +18,8 @@ public sealed record BookDetailDto
     public int? TotalPages { get; init; }
     public bool HasDigital { get; init; }
     public bool IsPhysical { get; init; }
+    public string? PhysicalLocation { get; init; }
+    public string? PhysicalNotes { get; init; }
     public IReadOnlyList<string> Tags { get; init; } = Array.Empty<string>();
     public IReadOnlyList<CopyDto> Copies { get; init; } = Array.Empty<CopyDto>();
 }

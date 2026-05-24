@@ -19,6 +19,7 @@ public static class BookEndpoints
         group.MapPost("", CreatePhysicalBook);
         group.MapPut("/{id:guid}", UpdateBook);
         group.MapPatch("/{id:guid}/reading", UpdateReading);
+        group.MapPatch("/{id:guid}/physical", UpdatePhysical);
         group.MapDelete("/{id:guid}", DeleteBook);
         group.MapGet("/{id:guid}/cover", (Guid id, KnovaultDbContext db, ICoverStore covers, CancellationToken ct) =>
             ServeCover(id, db, covers, thumb: false, ct));
@@ -119,6 +120,18 @@ public static class BookEndpoints
         {
             return Results.Problem(title: ex.Message, statusCode: StatusCodes.Status400BadRequest);
         }
+        await db.SaveChangesAsync();
+        return Results.Ok(book.ToDetailDto());
+    }
+
+    private static async Task<IResult> UpdatePhysical(KnovaultDbContext db, Guid id, UpdatePhysicalRequest req)
+    {
+        var book = await db.Books
+            .Include(b => b.Copies)
+            .Include(b => b.Tags)
+            .FirstOrDefaultAsync(b => b.Id == id);
+        if (book is null) return Results.NotFound();
+        book.SetPhysicalInfo(req.IsPhysical, req.Location, req.Notes);
         await db.SaveChangesAsync();
         return Results.Ok(book.ToDetailDto());
     }
