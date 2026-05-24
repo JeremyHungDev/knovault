@@ -65,11 +65,12 @@ onMounted(async () => {
 })
 
 async function lookupIsbn() {
-  const isbn = form.isbn.trim()
+  const isbn = form.isbn.replace(/[-\s]/g, '').trim()
   if (!isbn) {
     message.warning('請先輸入 ISBN')
     return
   }
+  form.isbn = isbn // 正規化欄位（去掉連字號/空白）
   isbnLooking.value = true
   lookupNote.value = null
   try {
@@ -102,6 +103,7 @@ async function submit() {
   saving.value = true
   try {
     const authors = form.authors.map((a) => a.trim()).filter(Boolean)
+    const isbn = form.isbn.replace(/[-\s]/g, '').trim() || null
     if (isEdit.value && editId.value) {
       const updated = await booksApi.update(editId.value, {
         title: form.title.trim(),
@@ -111,7 +113,7 @@ async function submit() {
         publisher: form.publisher || null,
         publishedDate: form.publishedDate || null,
         description: form.description || null,
-        isbn: form.isbn || null,
+        isbn,
       })
       message.success('已儲存')
       router.push(`/books/${updated.id}`)
@@ -119,7 +121,7 @@ async function submit() {
       const created = await booksApi.createPhysical({
         title: form.title.trim(),
         authors,
-        isbn: form.isbn || null,
+        isbn,
         publisher: form.publisher || null,
         publishedDate: form.publishedDate || null,
         language: form.language || null,
@@ -148,9 +150,9 @@ async function submit() {
       </div>
 
       <n-form label-placement="top" class="form">
-        <n-form-item label="ISBN（可線上查詢自動帶入）">
+        <n-form-item label="ISBN（可線上查詢自動帶入；可不加連字號 -）">
           <n-input-group>
-            <n-input v-model:value="form.isbn" placeholder="978…" />
+            <n-input v-model:value="form.isbn" placeholder="例如 9780321125217（連字號 - 可省略）" />
             <n-button
               v-if="!isEdit"
               :loading="isbnLooking"

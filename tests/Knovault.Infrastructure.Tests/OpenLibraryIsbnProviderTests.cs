@@ -29,7 +29,7 @@ public class OpenLibraryIsbnProviderTests
                 "title": "Domain-Driven Design",
                 "authors": [{ "name": "Eric Evans" }],
                 "publishers": [{ "name": "Addison-Wesley" }],
-                "publish_date": "2003",
+                "publish_date": "2003-10-?",
                 "number_of_pages": 560,
                 "cover": { "small": "https://covers/s.jpg", "medium": "https://covers/m.jpg", "large": "https://covers/l.jpg" }
               }
@@ -46,6 +46,7 @@ public class OpenLibraryIsbnProviderTests
         meta.PageCount.Should().Be(560);
         meta.Isbn.Should().Be(isbn);
         meta.CoverUrl.Should().Be("https://covers/l.jpg");
+        meta.PublishedDate.Should().Be("2003-10"); // "2003-10-?" 清理後
     }
 
     [Fact]
