@@ -118,8 +118,8 @@ public class Book
     public void SetPhysicalInfo(bool isPhysical, string? location, string? notes)
     {
         IsPhysical = isPhysical;
-        PhysicalLocation = isPhysical ? location?.Trim() : null;
-        PhysicalNotes = isPhysical ? notes?.Trim() : null;
+        PhysicalLocation = isPhysical ? (location?.Trim() is { Length: > 0 } loc ? loc : null) : null;
+        PhysicalNotes = isPhysical ? (notes?.Trim() is { Length: > 0 } n ? n : null) : null;
         Touch();
     }
 

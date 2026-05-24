@@ -112,4 +112,15 @@ public class BookTests
         book.PhysicalLocation.Should().BeNull();
         book.PhysicalNotes.Should().BeNull();
     }
+
+    [Fact]
+    public void SetPhysicalInfo_trims_whitespace_only_to_null()
+    {
+        var book = NewBook();
+        book.SetPhysicalInfo(true, "   ", "  ");
+
+        book.IsPhysical.Should().BeTrue();
+        book.PhysicalLocation.Should().BeNull();
+        book.PhysicalNotes.Should().BeNull();
+    }
 }

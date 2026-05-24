@@ -69,7 +69,7 @@ public class BookEndpointsTests : IClassFixture<TestApiFactory>
         // PATCH physical
         var patchResp = await client.PatchAsJsonAsync(
             $"/api/books/{book!.Id}/physical",
-            new { isPhysical = true, location = "書房 B 櫃", notes = "精裝本" });
+            new UpdatePhysicalRequest { IsPhysical = true, Location = "書房 B 櫃", Notes = "精裝本" });
         patchResp.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var updated = await patchResp.Content.ReadFromJsonAsync<BookDetailDto>();
@@ -93,12 +93,12 @@ public class BookEndpointsTests : IClassFixture<TestApiFactory>
         // 先設位置
         await client.PatchAsJsonAsync(
             $"/api/books/{book!.Id}/physical",
-            new { isPhysical = true, location = "書房", notes = "備註" });
+            new UpdatePhysicalRequest { IsPhysical = true, Location = "書房", Notes = "備註" });
 
         // 再取消
         var clearResp = await client.PatchAsJsonAsync(
             $"/api/books/{book.Id}/physical",
-            new { isPhysical = false });
+            new UpdatePhysicalRequest { IsPhysical = false });
         clearResp.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var cleared = await clearResp.Content.ReadFromJsonAsync<BookDetailDto>();
@@ -113,7 +113,7 @@ public class BookEndpointsTests : IClassFixture<TestApiFactory>
         var client = _factory.CreateClient();
         var resp = await client.PatchAsJsonAsync(
             $"/api/books/{Guid.NewGuid()}/physical",
-            new { isPhysical = true });
+            new UpdatePhysicalRequest { IsPhysical = true });
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }
