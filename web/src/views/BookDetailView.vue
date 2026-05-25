@@ -19,7 +19,6 @@ import {
   NFormItem,
   NEmpty,
   useMessage,
-  useDialog,
 } from 'naive-ui'
 import { booksApi } from '@/api/books'
 import { copiesApi } from '@/api/copies'
@@ -37,7 +36,6 @@ import {
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
-const dialog = useDialog()
 const tagsStore = useTagsStore()
 const { tags: allTags } = storeToRefs(tagsStore)
 
@@ -109,16 +107,18 @@ function copyFormatLabel(c: Copy): string {
   return c.format.toUpperCase() === 'PDF' ? '📄 PDF' : '📱 EPUB'
 }
 
-async function saveReading() {
+async function saveReading(newStatus?: ReadingStatus) {
   if (!book.value) return
+  const readingStatus = newStatus ?? status.value
   savingReading.value = true
   try {
-    const updated = await booksApi.updateReading(book.value.id, {
-      readingStatus: status.value,
-    })
+    const updated = await booksApi.updateReading(book.value.id, { readingStatus })
     book.value = updated
+    status.value = updated.readingStatus
     message.success('已更新閱讀狀態')
   } catch (e) {
+    // 還原選擇
+    status.value = book.value.readingStatus
     message.error(e instanceof Error ? e.message : '更新失敗')
   } finally {
     savingReading.value = false
@@ -129,6 +129,7 @@ async function assignTag(tagId: string) {
   if (!book.value) return
   try {
     await tagsApi.assign(book.value.id, tagId)
+    addingTagId.value = null
     await load()
     await tagsStore.fetch()
   } catch (e) {
@@ -149,6 +150,7 @@ async function unassignTag(tagName: string) {
   }
 }
 
+const addingTagId = ref<string | null>(null)
 const newTagName = ref('')
 async function createAndAssign() {
   if (!book.value || !newTagName.value.trim()) return
@@ -214,24 +216,7 @@ async function savePhysical() {
   }
 }
 
-function confirmDelete() {
-  if (!book.value) return
-  dialog.warning({
-    title: '刪除書籍',
-    content: '將移除此目錄項與其版本紀錄，但永不刪除硬碟上的書檔。確定刪除？',
-    positiveText: '刪除',
-    negativeText: '取消',
-    onPositiveClick: async () => {
-      try {
-        await booksApi.remove(book.value!.id)
-        message.success('已刪除')
-        router.push('/')
-      } catch (e) {
-        message.error(e instanceof Error ? e.message : '刪除失敗')
-      }
-    },
-  })
-}
+
 </script>
 
 <template>
@@ -240,10 +225,6 @@ function confirmDelete() {
     <template v-if="book">
       <div class="topbar">
         <n-button quaternary @click="router.push('/')">◀ 返回</n-button>
-        <n-space>
-          <n-button @click="router.push(`/books/${book.id}/edit`)">編輯</n-button>
-          <n-button type="error" ghost @click="confirmDelete">刪除</n-button>
-        </n-space>
       </div>
 
       <div class="header">
@@ -307,6 +288,7 @@ function confirmDelete() {
             </n-tag>
             <n-select
               v-if="availableTags.length"
+              v-model:value="addingTagId"
               size="small"
               class="tag-add"
               placeholder="+ 加標籤"
@@ -330,15 +312,10 @@ function confirmDelete() {
                 size="small"
                 class="status-select"
                 :options="READING_STATUS_OPTIONS"
-              />
-              <n-button
-                size="small"
-                type="primary"
                 :loading="savingReading"
-                @click="saveReading"
-              >
-                儲存
-              </n-button>
+                :disabled="savingReading"
+                @update:value="saveReading"
+              />
             </div>
           </div>
         </div>
