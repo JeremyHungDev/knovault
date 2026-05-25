@@ -59,13 +59,4 @@ public class CoverAndPagesTests : IClassFixture<TestApiFactory>
             .StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact]
-    public async Task Create_with_total_pages_sets_progress_total()
-    {
-        var client = _factory.CreateClient();
-        var resp = await client.PostAsJsonAsync("/api/books",
-            new CreatePhysicalBookRequest { Title = "頁數書", TotalPages = 300 });
-        var detail = await resp.Content.ReadFromJsonAsync<BookDetailDto>();
-        detail!.TotalPages.Should().Be(300);
-    }
 }

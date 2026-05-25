@@ -12,7 +12,6 @@ public static class BookMappings
         Authors = b.Authors.Select(a => a.Name).ToList(),
         CoverPath = b.CoverPath,
         ReadingStatus = b.ReadingStatus.ToString(),
-        ProgressPercent = b.Progress.Percent,
         HasDigital = b.HasDigital,
         HasPhysical = b.HasPhysical
     };
@@ -30,9 +29,6 @@ public static class BookMappings
         Isbn = b.Isbn,
         CoverPath = b.CoverPath,
         ReadingStatus = b.ReadingStatus.ToString(),
-        ProgressPercent = b.Progress.Percent,
-        CurrentPage = b.Progress.CurrentPage,
-        TotalPages = b.Progress.TotalPages,
         HasDigital = b.HasDigital,
         IsPhysical = b.IsPhysical,
         PhysicalLocation = b.PhysicalLocation,

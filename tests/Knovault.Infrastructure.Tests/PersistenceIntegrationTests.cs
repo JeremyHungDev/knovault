@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Knovault.Domain.Entities;
 using Knovault.Domain.Enums;
-using Knovault.Domain.ValueObjects;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -22,8 +21,7 @@ public class PersistenceIntegrationTests
             book.SetAuthors(new[] { "Eric Evans" });
             book.UpdateMetadata("Domain-Driven Design", "Tackling Complexity",
                 "en", "Addison-Wesley", "2003", "經典", "9780321125217");
-            book.SetReadingStatus(ReadingStatus.Reading);
-            book.SetProgress(ReadingProgress.Create(percent: 40, currentPage: 200, totalPages: 500));
+            book.SetReadingStatus(ReadingStatus.WantToRead);
             book.AddCopy(new DigitalCopy("D:/books/ddd.epub", BookFormat.Epub, 2048, "hashA",
                 DateTimeOffset.UtcNow, null));
             book.SetPhysical(true);
@@ -44,37 +42,13 @@ public class PersistenceIntegrationTests
             loaded.Title.Should().Be("Domain-Driven Design");
             loaded.Subtitle.Should().Be("Tackling Complexity");
             loaded.Isbn.Should().Be("9780321125217");
-            loaded.ReadingStatus.Should().Be(ReadingStatus.Reading);
+            loaded.ReadingStatus.Should().Be(ReadingStatus.WantToRead);
             loaded.Authors.Should().ContainSingle(a => a.Name == "Eric Evans");
-            loaded.Progress.Percent.Should().Be(40);
-            loaded.Progress.TotalPages.Should().Be(500);
             loaded.Copies.OfType<DigitalCopy>().Should().ContainSingle(c => c.FilePath == "D:/books/ddd.epub");
             loaded.Tags.Should().ContainSingle(t => t.Name == "設計");
             loaded.HasDigital.Should().BeTrue();
             loaded.IsPhysical.Should().BeTrue();
             loaded.HasPhysical.Should().BeTrue();
-        }
-    }
-
-    [Fact]
-    public async Task Book_with_empty_progress_round_trips_as_non_null()
-    {
-        using var db = new SqliteTestDb();
-        Guid id;
-
-        await using (var ctx = db.NewContext())
-        {
-            var book = new Book("No Progress Book");
-            id = book.Id;
-            ctx.Books.Add(book);
-            await ctx.SaveChangesAsync();
-        }
-
-        await using (var ctx = db.NewContext())
-        {
-            var loaded = await ctx.Books.SingleAsync(b => b.Id == id);
-            loaded.Progress.Should().NotBeNull();
-            loaded.Progress.Percent.Should().BeNull();
         }
     }
 

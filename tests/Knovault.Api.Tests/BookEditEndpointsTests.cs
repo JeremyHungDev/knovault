@@ -38,21 +38,32 @@ public class BookEditEndpointsTests : IClassFixture<TestApiFactory>
     }
 
     [Fact]
-    public async Task Patch_reading_updates_status_and_progress()
+    public async Task Patch_reading_updates_status()
     {
         var client = _factory.CreateClient();
-        var book = await CreateBookAsync(client, "進度書");
+        var book = await CreateBookAsync(client, "想讀書");
 
         var resp = await client.PatchAsJsonAsync($"/api/books/{book.Id}/reading", new UpdateReadingRequest
         {
-            ReadingStatus = "Reading",
-            Percent = 55
+            ReadingStatus = "WantToRead"
         });
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var detail = await client.GetFromJsonAsync<BookDetailDto>($"/api/books/{book.Id}");
-        detail!.ReadingStatus.Should().Be("Reading");
-        detail.ProgressPercent.Should().Be(55);
+        detail!.ReadingStatus.Should().Be("WantToRead");
+    }
+
+    [Fact]
+    public async Task Patch_reading_rejects_invalid_status()
+    {
+        var client = _factory.CreateClient();
+        var book = await CreateBookAsync(client, "測試書");
+
+        var resp = await client.PatchAsJsonAsync($"/api/books/{book.Id}/reading", new UpdateReadingRequest
+        {
+            ReadingStatus = "Finished"
+        });
+        resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]

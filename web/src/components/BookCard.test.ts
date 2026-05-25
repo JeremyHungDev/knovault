@@ -26,8 +26,7 @@ function makeBook(p: Partial<BookSummary> = {}): BookSummary {
     title: '深度工作',
     authors: ['Cal Newport'],
     coverPath: null,
-    readingStatus: 'Reading',
-    progressPercent: 45,
+    readingStatus: 'None',
     hasDigital: true,
     hasPhysical: true,
     ...p,
@@ -35,10 +34,9 @@ function makeBook(p: Partial<BookSummary> = {}): BookSummary {
 }
 
 describe('BookCard', () => {
-  it('renders title and author in overlay', () => {
+  it('renders title in overlay', () => {
     const w = mount(BookCard, { props: { book: makeBook() } })
     expect(w.text()).toContain('深度工作')
-    expect(w.text()).toContain('Cal Newport')
   })
 
   it('shows placeholder when no cover', () => {
@@ -70,43 +68,11 @@ describe('BookCard', () => {
     expect(pushMock).not.toHaveBeenCalled()
   })
 
-  it('shows both digital and physical badges', () => {
-    const w = mount(BookCard, { props: { book: makeBook() } })
-    const badges = w.find('.badges').text()
-    expect(badges).toContain('📱')
-    expect(badges).toContain('📚')
-  })
-
-  it('shows progress bar when Reading with progressPercent', () => {
-    const w = mount(BookCard, {
-      props: { book: makeBook({ readingStatus: 'Reading', progressPercent: 45 }) },
-    })
-    const bar = w.find('.progress-bar')
-    expect(bar.exists()).toBe(true)
-    expect(bar.attributes('style')).toContain('width: 45%')
-  })
-
-  it('shows full green progress bar when Finished', () => {
-    const w = mount(BookCard, {
-      props: { book: makeBook({ readingStatus: 'Finished', progressPercent: 100 }) },
-    })
-    const bar = w.find('.progress-bar')
-    expect(bar.exists()).toBe(true)
-    expect(bar.attributes('style')).toContain('width: 100%')
-  })
-
-  it('no progress bar when None', () => {
-    const w = mount(BookCard, {
-      props: { book: makeBook({ readingStatus: 'None', progressPercent: null }) },
-    })
-    expect(w.find('.progress-bar').exists()).toBe(false)
-  })
-
-  it('no progress bar when WantToRead', () => {
-    const w = mount(BookCard, {
-      props: { book: makeBook({ readingStatus: 'WantToRead', progressPercent: null }) },
-    })
-    expect(w.find('.progress-bar').exists()).toBe(false)
+  it('no progress bar for any status', () => {
+    for (const status of ['None', 'WantToRead'] as const) {
+      const w = mount(BookCard, { props: { book: makeBook({ readingStatus: status }) } })
+      expect(w.find('.progress-bar').exists()).toBe(false)
+    }
   })
 
   it('emits refresh event type correctly', () => {

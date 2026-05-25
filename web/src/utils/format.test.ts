@@ -37,15 +37,12 @@ describe('authorsLine', () => {
 })
 
 describe('reading status helpers', () => {
-  it('labels statuses', () => {
-    expect(readingStatusLabel('Reading')).toBe('閱讀中')
-    expect(readingStatusLabel('Finished')).toBe('讀完')
+  it('labels None and WantToRead', () => {
     expect(readingStatusLabel('None')).toBe('未標記')
+    expect(readingStatusLabel('WantToRead')).toBe('想讀')
     expect(readingStatusLabel(null)).toBe('未標記')
   })
   it('maps tag types', () => {
-    expect(readingStatusTagType('Reading')).toBe('info')
-    expect(readingStatusTagType('Finished')).toBe('success')
     expect(readingStatusTagType('WantToRead')).toBe('warning')
     expect(readingStatusTagType('None')).toBe('default')
   })

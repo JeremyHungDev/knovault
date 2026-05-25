@@ -13,15 +13,11 @@ export function formatFileSize(bytes: number | null | undefined): string {
 export const READING_STATUS_LABELS: Record<ReadingStatus, string> = {
   None: '未標記',
   WantToRead: '想讀',
-  Reading: '閱讀中',
-  Finished: '讀完',
 }
 
 export const READING_STATUS_OPTIONS: { label: string; value: ReadingStatus }[] = [
   { label: '未標記', value: 'None' },
   { label: '想讀', value: 'WantToRead' },
-  { label: '閱讀中', value: 'Reading' },
-  { label: '讀完', value: 'Finished' },
 ]
 
 export function readingStatusLabel(status: ReadingStatus | string | null | undefined): string {
@@ -29,19 +25,10 @@ export function readingStatusLabel(status: ReadingStatus | string | null | undef
   return READING_STATUS_LABELS[status as ReadingStatus] ?? String(status)
 }
 
-export type StatusTagType = 'default' | 'info' | 'success' | 'warning'
+export type StatusTagType = 'default' | 'warning'
 
 export function readingStatusTagType(status: ReadingStatus | string | null | undefined): StatusTagType {
-  switch (status) {
-    case 'Reading':
-      return 'info'
-    case 'Finished':
-      return 'success'
-    case 'WantToRead':
-      return 'warning'
-    default:
-      return 'default'
-  }
+  return status === 'WantToRead' ? 'warning' : 'default'
 }
 
 export function authorsLine(authors: string[] | null | undefined): string {

@@ -3,7 +3,6 @@ using Knovault.Api.Mapping;
 using Knovault.Application.Covers;
 using Knovault.Domain.Entities;
 using Knovault.Domain.Enums;
-using Knovault.Domain.ValueObjects;
 using Knovault.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -58,9 +57,6 @@ public static class BookEndpoints
         book.SetAuthors(req.Authors);
         book.UpdateMetadata(req.Title, null, req.Language, req.Publisher, req.PublishedDate, req.Description, req.Isbn);
         book.SetPhysical(true);
-        if (req.TotalPages is int tp && tp > 0)
-            book.SetProgress(ReadingProgress.Create(totalPages: tp));
-
         if (!string.IsNullOrWhiteSpace(req.CoverUrl))
         {
             var fetched = await coverFetcher.FetchAsync(req.CoverUrl, ct);
@@ -111,15 +107,7 @@ public static class BookEndpoints
         if (book is null) return Results.NotFound();
         if (!Enum.TryParse<ReadingStatus>(req.ReadingStatus, out var status))
             return Results.Problem(title: "閱讀狀態無效", statusCode: StatusCodes.Status400BadRequest);
-        try
-        {
-            book.SetReadingStatus(status);
-            book.SetProgress(ReadingProgress.Create(req.Percent, req.CurrentPage, req.TotalPages));
-        }
-        catch (ArgumentException ex)
-        {
-            return Results.Problem(title: ex.Message, statusCode: StatusCodes.Status400BadRequest);
-        }
+        book.SetReadingStatus(status);
         await db.SaveChangesAsync();
         return Results.Ok(book.ToDetailDto());
     }

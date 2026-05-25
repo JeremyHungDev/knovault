@@ -33,7 +33,6 @@ const form = reactive({
   publishedDate: '',
   language: '',
   description: '',
-  totalPages: null as number | null,
   coverUrl: null as string | null,
   isPhysical: false,
 })
@@ -81,9 +80,8 @@ async function lookupIsbn() {
     if (meta.publisher) form.publisher = meta.publisher
     if (meta.publishedDate) form.publishedDate = meta.publishedDate
     if (meta.isbn) form.isbn = meta.isbn
-    if (meta.pageCount) form.totalPages = meta.pageCount
     if (meta.coverUrl) form.coverUrl = meta.coverUrl
-    lookupNote.value = '已帶入查詢結果（含封面/總頁數），可手動修改後儲存。'
+    lookupNote.value = '已帶入查詢結果（含封面），可手動修改後儲存。'
   } catch (e) {
     lookupNote.value = null
     message.error(
@@ -128,7 +126,6 @@ async function submit() {
         publishedDate: form.publishedDate || null,
         language: form.language || null,
         description: form.description || null,
-        totalPages: form.totalPages,
         coverUrl: form.coverUrl,
       })
       message.success('已新增實體書')
@@ -196,14 +193,6 @@ async function submit() {
         </n-form-item>
         <n-form-item label="語言">
           <n-input v-model:value="form.language" placeholder="如 zh-Hant" />
-        </n-form-item>
-        <n-form-item label="總頁數">
-          <n-input-number
-            v-model:value="form.totalPages"
-            :min="1"
-            placeholder="ISBN 查詢可自動帶入"
-            style="width: 100%"
-          />
         </n-form-item>
         <n-form-item label="簡介">
           <n-input

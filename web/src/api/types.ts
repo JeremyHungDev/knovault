@@ -1,6 +1,6 @@
 // 與後端 DTO 對齊（一般 JSON 回應為 camelCase）。
 
-export type ReadingStatus = 'None' | 'WantToRead' | 'Reading' | 'Finished'
+export type ReadingStatus = 'None' | 'WantToRead'
 
 export interface PagedResult<T> {
   items: T[]
@@ -15,7 +15,6 @@ export interface BookSummary {
   authors: string[]
   coverPath: string | null
   readingStatus: ReadingStatus
-  progressPercent: number | null
   hasDigital: boolean
   hasPhysical: boolean
 }
@@ -41,9 +40,6 @@ export interface BookDetail {
   isbn: string | null
   coverPath: string | null
   readingStatus: ReadingStatus
-  progressPercent: number | null
-  currentPage: number | null
-  totalPages: number | null
   hasDigital: boolean
   isPhysical: boolean
   physicalLocation: string | null
@@ -120,7 +116,6 @@ export interface CreatePhysicalBookRequest {
   publishedDate?: string | null
   language?: string | null
   description?: string | null
-  totalPages?: number | null
   coverUrl?: string | null
 }
 
@@ -138,9 +133,6 @@ export interface UpdateBookRequest {
 
 export interface UpdateReadingRequest {
   readingStatus: ReadingStatus
-  percent?: number | null
-  currentPage?: number | null
-  totalPages?: number | null
 }
 
 export interface UpdatePhysicalRequest {

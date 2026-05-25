@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Knovault.Domain.Entities;
 using Knovault.Domain.Enums;
-using Knovault.Domain.ValueObjects;
 using Xunit;
 
 namespace Knovault.Domain.Tests;
@@ -17,7 +16,6 @@ public class BookTests
         book.Id.Should().NotBe(Guid.Empty);
         book.Title.Should().Be("Clean Architecture");
         book.ReadingStatus.Should().Be(ReadingStatus.None);
-        book.Progress.Should().BeSameAs(ReadingProgress.Empty);
         book.HasDigital.Should().BeFalse();
         book.HasPhysical.Should().BeFalse();
     }
@@ -69,15 +67,13 @@ public class BookTests
     }
 
     [Fact]
-    public void SetProgress_and_status_update_timestamp()
+    public void SetReadingStatus_to_WantToRead_updates_timestamp()
     {
         var book = NewBook();
         var before = book.UpdatedAt;
-        book.SetReadingStatus(ReadingStatus.Reading);
-        book.SetProgress(ReadingProgress.Create(percent: 30));
+        book.SetReadingStatus(ReadingStatus.WantToRead);
 
-        book.ReadingStatus.Should().Be(ReadingStatus.Reading);
-        book.Progress.Percent.Should().Be(30);
+        book.ReadingStatus.Should().Be(ReadingStatus.WantToRead);
         book.UpdatedAt.Should().BeOnOrAfter(before);
     }
 

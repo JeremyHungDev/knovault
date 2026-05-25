@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   NButton,
@@ -8,8 +8,6 @@ import {
   NSpin,
   NAlert,
   NSelect,
-  NSlider,
-  NInputNumber,
   NDivider,
   NList,
   NListItem,
@@ -49,33 +47,9 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const coverFailed = ref(false)
 
-// 閱讀狀態 / 進度本地編輯狀態
+// 閱讀狀態本地編輯狀態
 const status = ref<ReadingStatus>('None')
-const percent = ref<number | null>(null)
-const currentPage = ref<number | null>(null)
-const totalPages = ref<number | null>(null)
 const savingReading = ref(false)
-
-// NSlider 不接受 null；用 0 代表未設定，NInputNumber 仍保留 nullable
-const sliderPercent = computed<number>({
-  get: () => percent.value ?? 0,
-  set: (v) => { percent.value = v },
-})
-
-// 填了目前頁數 + 總頁數 → 自動算 %（使用者仍可手動覆蓋）
-watch([currentPage, totalPages], ([cur, tot]) => {
-  if (cur != null && tot != null && tot > 0) {
-    percent.value = Math.min(100, Math.max(0, Math.round((cur / tot) * 100)))
-  }
-})
-
-// 有閱讀進度時，自動把狀態切到「閱讀中」（除非已是想讀以外的狀態）
-watch([percent, currentPage], ([p, cur]) => {
-  const hasProgress = (p != null && p > 0) || (cur != null && cur > 0)
-  if (hasProgress && (status.value === 'None' || status.value === 'WantToRead')) {
-    status.value = 'Reading'
-  }
-})
 
 // 封面上傳（含快取破壞，上傳後強制重載 <img>）
 const coverInput = ref<HTMLInputElement | null>(null)
@@ -114,9 +88,6 @@ async function load() {
     const b = await booksApi.get(id.value)
     book.value = b
     status.value = b.readingStatus
-    percent.value = b.progressPercent
-    currentPage.value = b.currentPage
-    totalPages.value = b.totalPages
   } catch (e) {
     error.value = e instanceof Error ? e.message : '載入失敗'
   } finally {
@@ -144,9 +115,6 @@ async function saveReading() {
   try {
     const updated = await booksApi.updateReading(book.value.id, {
       readingStatus: status.value,
-      percent: percent.value,
-      currentPage: currentPage.value,
-      totalPages: totalPages.value,
     })
     book.value = updated
     message.success('已更新閱讀狀態')
@@ -363,43 +331,6 @@ function confirmDelete() {
                 class="status-select"
                 :options="READING_STATUS_OPTIONS"
               />
-            </div>
-            <div class="reading-row">
-              <span class="label">進度：</span>
-              <n-slider
-                v-model:value="sliderPercent"
-                :min="0"
-                :max="100"
-                class="slider"
-                :tooltip="true"
-              />
-              <n-input-number
-                v-model:value="percent"
-                size="small"
-                :min="0"
-                :max="100"
-                class="pct-input"
-              >
-                <template #suffix>%</template>
-              </n-input-number>
-            </div>
-            <div class="reading-row pages">
-              <span class="label">頁數：</span>
-              <n-input-number
-                v-model:value="currentPage"
-                size="small"
-                :min="0"
-                placeholder="現在頁"
-                class="page-input"
-              />
-              <span>/</span>
-              <n-input-number
-                v-model:value="totalPages"
-                size="small"
-                :min="0"
-                placeholder="總頁"
-                class="page-input"
-              />
               <n-button
                 size="small"
                 type="primary"
@@ -495,7 +426,7 @@ function confirmDelete() {
         :loading="savingPhysical"
         @positive-click="savePhysical"
       >
-        <n-form label-placement="left" label-width="80">
+        <n-form label-placement="left" label-width="auto">
           <n-form-item label="📍 館藏位置">
             <n-input
               v-model:value="physicalForm.location"
@@ -660,16 +591,6 @@ function confirmDelete() {
 }
 .status-select {
   width: 140px;
-}
-.slider {
-  flex: 1;
-  max-width: 260px;
-}
-.pct-input {
-  width: 110px;
-}
-.page-input {
-  width: 120px;
 }
 .description {
   white-space: pre-wrap;

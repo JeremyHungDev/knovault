@@ -19,23 +19,13 @@ function open() {
   router.push(`/books/${props.book.id}`)
 }
 
-// 進度條 style（null = 不顯示）
-const progressBarStyle = computed<Record<string, string> | null>(() => {
-  const { readingStatus, progressPercent } = props.book
-  if (readingStatus === 'Finished')
-    return { width: '100%', background: '#18a058' }
-  if (readingStatus === 'Reading' && progressPercent != null && progressPercent > 0)
-    return { width: `${progressPercent}%`, background: '#18a058' }
-  return null
-})
-
 // 三點選單 options
 const dropdownOptions = computed(() => [
   { label: '編輯書目', key: 'edit' },
   {
     label: '標記閱讀狀態',
     key: 'status',
-    children: (['None', 'WantToRead', 'Reading', 'Finished'] as ReadingStatus[]).map((s) => ({
+    children: (['None', 'WantToRead'] as ReadingStatus[]).map((s) => ({
       label: props.book.readingStatus === s
         ? `✓ ${READING_STATUS_LABELS[s]}`
         : READING_STATUS_LABELS[s],
@@ -121,7 +111,6 @@ async function handleSelect(key: string) {
       </div>
     </div>
 
-    <div v-if="progressBarStyle" class="progress-bar" :style="progressBarStyle" />
   </div>
 </template>
 
@@ -214,9 +203,5 @@ async function handleSelect(key: string) {
   outline: 2px solid #18a058;
   outline-offset: 2px;
   color: #fff;
-}
-.progress-bar {
-  height: 3px;
-  transition: width 0.3s ease;
 }
 </style>
