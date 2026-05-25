@@ -12,6 +12,7 @@ function book(p: Partial<BookSummary>): BookSummary {
     progressPercent: p.progressPercent ?? null,
     hasDigital: p.hasDigital ?? false,
     hasPhysical: p.hasPhysical ?? false,
+    tags: p.tags ?? [],
   }
 }
 

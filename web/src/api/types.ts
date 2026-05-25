@@ -17,6 +17,7 @@ export interface BookSummary {
   readingStatus: ReadingStatus
   hasDigital: boolean
   hasPhysical: boolean
+  tags: string[]
 }
 
 // 形式重構後 copy 僅代表數位檔（實體已改為 Book.isPhysical 旗標）。
