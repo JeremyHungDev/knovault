@@ -29,6 +29,8 @@ export function applyFilters(books: BookSummary[], f: BookFilters): BookSummary[
 
   if (f.status !== 'all') result = result.filter((b) => b.readingStatus === f.status)
 
+  if (f.tag) result = result.filter((b) => b.tags.includes(f.tag!))
+
   switch (f.sort) {
     case 'title-desc':
       result.sort((a, b) => b.title.localeCompare(a.title, 'zh-Hant'))

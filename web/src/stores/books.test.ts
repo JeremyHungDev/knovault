@@ -65,6 +65,25 @@ describe('applyFilters', () => {
     applyFilters(books, { ...base, sort: 'title-desc' })
     expect(books).toEqual(copy)
   })
+
+  it('filters by tag', () => {
+    const tagged = [
+      book({ title: 'A', tags: ['科技'] }),
+      book({ title: 'B', tags: ['設計'] }),
+      book({ title: 'C', tags: ['科技', '設計'] }),
+    ]
+    const r = applyFilters(tagged, { ...base, tag: '科技' })
+    expect(r).toHaveLength(2)
+    expect(r.map((b) => b.title).sort()).toEqual(['A', 'C'])
+  })
+
+  it('shows all books when tag filter is null', () => {
+    const booksWithTags = [
+      book({ title: 'A', tags: ['科技'] }),
+      book({ title: 'B', tags: [] }),
+    ]
+    expect(applyFilters(booksWithTags, { ...base, tag: null })).toHaveLength(2)
+  })
 })
 
 describe('paginate', () => {
