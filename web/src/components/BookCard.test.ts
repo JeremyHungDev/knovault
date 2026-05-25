@@ -29,6 +29,7 @@ function makeBook(p: Partial<BookSummary> = {}): BookSummary {
     readingStatus: 'None',
     hasDigital: true,
     hasPhysical: true,
+    tags: p.tags ?? [],
     ...p,
   }
 }
