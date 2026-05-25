@@ -9,7 +9,6 @@ function book(p: Partial<BookSummary>): BookSummary {
     authors: p.authors ?? [],
     coverPath: p.coverPath ?? null,
     readingStatus: p.readingStatus ?? 'None',
-    progressPercent: p.progressPercent ?? null,
     hasDigital: p.hasDigital ?? false,
     hasPhysical: p.hasPhysical ?? false,
     tags: p.tags ?? [],
