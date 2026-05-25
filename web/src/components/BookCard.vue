@@ -6,8 +6,10 @@ import type { BookSummary, ReadingStatus } from '@/api/types'
 import { booksApi } from '@/api/books'
 import { coverThumbUrl } from '@/api/http'
 import { authorsLine, READING_STATUS_LABELS } from '@/utils/format'
+import { useThemeStore } from '@/stores/theme'
 
 const props = defineProps<{ book: BookSummary }>()
+const themeStore = useThemeStore()
 const emit = defineEmits<{ refresh: [] }>()
 
 const router = useRouter()
@@ -74,8 +76,8 @@ async function handleSelect(key: string) {
 </script>
 
 <template>
-  <div class="book-card" @click="open">
-    <div class="cover-wrap">
+  <div class="book-card">
+    <div class="cover-wrap" :data-has-digital="book.hasDigital">
       <img
         v-if="book.coverPath && !coverFailed"
         :src="coverThumbUrl(book.id)"
@@ -93,39 +95,44 @@ async function handleSelect(key: string) {
         <span v-if="book.hasPhysical" title="實體版本">📚</span>
       </div>
 
-      <div class="overlay">
-        <n-ellipsis class="title" :line-clamp="2">{{ book.title }}</n-ellipsis>
-        <div class="author-row">
-          <n-ellipsis class="author" style="flex: 1">
-            {{ authorsLine(book.authors) }}
-          </n-ellipsis>
-          <n-dropdown
-            :options="dropdownOptions"
-            trigger="click"
-            placement="bottom-end"
-            @select="handleSelect"
-          >
-            <button class="menu-btn" aria-label="書籍選項" @click.stop>⋮</button>
-          </n-dropdown>
-        </div>
-      </div>
     </div>
 
+    <div class="info-bar" :class="themeStore.dark ? 'info-dark' : 'info-light'" @click="open">
+      <div class="title">{{ book.title }}</div>
+      <div class="author-row">
+        <n-ellipsis class="author" style="flex: 1">
+          {{ authorsLine(book.authors) }}
+        </n-ellipsis>
+        <n-dropdown
+          :options="dropdownOptions"
+          trigger="click"
+          placement="bottom-end"
+          @select="handleSelect"
+        >
+          <button class="menu-btn" aria-label="書籍選項" @click.stop>⋮</button>
+        </n-dropdown>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .book-card {
-  cursor: pointer;
+  cursor: default;
   border-radius: 8px;
   overflow: hidden;
   background: rgba(128, 128, 128, 0.12);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  flex-direction: column;
 }
 .book-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+.info-bar:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
 }
 .cover-wrap {
   position: relative;
@@ -158,50 +165,86 @@ async function handleSelect(key: string) {
   padding: 1px 5px;
   border-radius: 6px;
 }
-.overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 28px 8px 8px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
+.info-bar {
+  cursor: pointer;
+  /* 固定高度：1行書名(17) + gap(4) + 作者列(18) + 上下padding(16) ≈ 55px */
+  height: 55px;
+  padding: 8px 6px 8px 10px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+/* Dark mode */
+.info-dark {
+  background: #2d2d30;
+}
+.info-dark .title {
+  color: #ffffff;
+}
+.info-dark .author {
+  color: rgba(255, 255, 255, 0.60);
+}
+.info-dark .menu-btn {
+  color: rgba(255, 255, 255, 0.75);
+}
+.info-dark .menu-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+}
+/* Light mode */
+.info-light {
+  background: #f2f2f2;
+}
+.info-light .title {
+  color: #1a1a1a;
+}
+.info-light .author {
+  color: rgba(0, 0, 0, 0.50);
+}
+.info-light .menu-btn {
+  color: rgba(0, 0, 0, 0.55);
+}
+.info-light .menu-btn:hover {
+  color: #111;
+  background: rgba(0, 0, 0, 0.08);
 }
 .title {
   font-weight: 600;
   font-size: 13px;
-  color: #fff;
   line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
 }
 .author-row {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;   /* 不被壓縮，確保作者列永遠在 */
+  min-width: 0;
 }
 .author {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .menu-btn {
   flex-shrink: 0;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   font-size: 18px;
   padding: 0 2px;
   line-height: 1;
   border-radius: 4px;
 }
-.menu-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.15);
-}
 .menu-btn:focus-visible {
   outline: 2px solid #18a058;
   outline-offset: 2px;
-  color: #fff;
 }
 </style>
