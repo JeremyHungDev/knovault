@@ -116,4 +116,24 @@ public class BookEndpointsTests : IClassFixture<TestApiFactory>
             new UpdatePhysicalRequest { IsPhysical = true });
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task List_books_summary_includes_assigned_tag_names()
+    {
+        var client = _factory.CreateClient();
+
+        var bookResp = await client.PostAsJsonAsync("/api/books",
+            new CreatePhysicalBookRequest { Title = "標籤篩選測試書", Authors = new() { "作者A" } });
+        var book = (await bookResp.Content.ReadFromJsonAsync<BookDetailDto>())!;
+
+        var tagResp = await client.PostAsJsonAsync("/api/tags",
+            new CreateTagRequest { Name = "心理學" });
+        var tag = (await tagResp.Content.ReadFromJsonAsync<TagDto>())!;
+
+        await client.PostAsync($"/api/books/{book.Id}/tags/{tag.Id}", null);
+
+        var list = await client.GetFromJsonAsync<PagedResult<BookSummaryDto>>("/api/books");
+        var summary = list!.Items.Single(b => b.Id == book.Id);
+        summary.Tags.Should().ContainSingle().Which.Should().Be("心理學");
+    }
 }

@@ -9,4 +9,5 @@ public sealed record BookSummaryDto
     public string ReadingStatus { get; init; } = "";
     public bool HasDigital { get; init; }
     public bool HasPhysical { get; init; }
+    public IReadOnlyList<string> Tags { get; init; } = Array.Empty<string>();
 }

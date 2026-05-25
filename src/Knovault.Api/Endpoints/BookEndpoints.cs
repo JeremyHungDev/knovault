@@ -31,7 +31,7 @@ public static class BookEndpoints
     {
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 200);
-        var query = db.Books.Include(b => b.Copies).AsQueryable();
+        var query = db.Books.Include(b => b.Copies).Include(b => b.Tags).AsQueryable();
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(b => b.Title.Contains(search));
         var total = await query.CountAsync();

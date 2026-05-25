@@ -13,7 +13,8 @@ public static class BookMappings
         CoverPath = b.CoverPath,
         ReadingStatus = b.ReadingStatus.ToString(),
         HasDigital = b.HasDigital,
-        HasPhysical = b.HasPhysical
+        HasPhysical = b.HasPhysical,
+        Tags = b.Tags.Select(t => t.Name).ToList()
     };
 
     public static BookDetailDto ToDetailDto(this Book b) => new()
