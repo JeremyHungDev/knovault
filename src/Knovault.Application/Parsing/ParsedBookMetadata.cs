@@ -11,6 +11,7 @@ public sealed record ParsedBookMetadata
     public string? Description { get; init; }
     public byte[]? CoverImage { get; init; }
     public string? CoverContentType { get; init; }
+    public string? CoverUrl { get; init; }
     public IReadOnlyList<TocEntry> Toc { get; init; } = Array.Empty<TocEntry>();
     public int? PageCount { get; init; }
 }

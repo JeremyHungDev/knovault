@@ -13,9 +13,10 @@ public sealed record BookDetailDto
     public string? Isbn { get; init; }
     public string? CoverPath { get; init; }
     public string ReadingStatus { get; init; } = "";
-    public int? ProgressPercent { get; init; }
-    public int? CurrentPage { get; init; }
-    public int? TotalPages { get; init; }
+    public bool HasDigital { get; init; }
+    public bool IsPhysical { get; init; }
+    public string? PhysicalLocation { get; init; }
+    public string? PhysicalNotes { get; init; }
     public IReadOnlyList<string> Tags { get; init; } = Array.Empty<string>();
     public IReadOnlyList<CopyDto> Copies { get; init; } = Array.Empty<CopyDto>();
 }

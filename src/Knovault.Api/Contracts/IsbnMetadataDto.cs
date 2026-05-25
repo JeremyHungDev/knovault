@@ -8,4 +8,5 @@ public sealed record IsbnMetadataDto
     public string? PublishedDate { get; init; }
     public string? Isbn { get; init; }
     public int? PageCount { get; init; }
+    public string? CoverUrl { get; init; }
 }

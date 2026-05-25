@@ -33,14 +33,31 @@ public sealed class OpenLibraryIsbnProvider : IIsbnMetadataProvider
         int? pages = book.TryGetProperty("number_of_pages", out var np) && np.TryGetInt32(out var pc)
             ? pc : null;
 
+        string? coverUrl = null;
+        if (book.TryGetProperty("cover", out var cover) && cover.ValueKind == JsonValueKind.Object)
+        {
+            coverUrl = (cover.TryGetProperty("large", out var lg) ? lg.GetString() : null)
+                ?? (cover.TryGetProperty("medium", out var md) ? md.GetString() : null)
+                ?? (cover.TryGetProperty("small", out var sm) ? sm.GetString() : null);
+        }
+
         return new ParsedBookMetadata
         {
             Title = book.TryGetProperty("title", out var t) ? t.GetString() : null,
             Authors = authors,
             Publisher = publisher,
-            PublishedDate = book.TryGetProperty("publish_date", out var d) ? d.GetString() : null,
+            PublishedDate = SanitizeDate(book.TryGetProperty("publish_date", out var d) ? d.GetString() : null),
             Isbn = isbn,
-            PageCount = pages
+            PageCount = pages,
+            CoverUrl = coverUrl
         };
+    }
+
+    // OpenLibrary 的 publish_date 可能含殘缺標記，如 "2008-10-?"；去掉 ? 與結尾分隔符。
+    private static string? SanitizeDate(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+        var s = raw.Replace("?", "").Trim().TrimEnd('-', '/', '.', ' ').Trim();
+        return s.Length == 0 ? null : s;
     }
 }

@@ -40,6 +40,8 @@ builder.Services.AddScoped<BookParsingService>();
 builder.Services.AddScoped<ILibraryScanService, LibraryScanService>();
 builder.Services.AddHttpClient<IIsbnMetadataProvider, OpenLibraryIsbnProvider>(c =>
     c.Timeout = TimeSpan.FromSeconds(10));
+builder.Services.AddHttpClient<ICoverFetcher, HttpCoverFetcher>(c =>
+    c.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();

@@ -2,6 +2,10 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Knovault.Api.Contracts;
+using Knovault.Domain.Entities;
+using Knovault.Domain.Enums;
+using Knovault.Infrastructure.Persistence;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Knovault.Api.Tests;
@@ -11,43 +15,45 @@ public class CopyEndpointsTests : IClassFixture<TestApiFactory>
     private readonly TestApiFactory _factory;
     public CopyEndpointsTests(TestApiFactory factory) => _factory = factory;
 
-    private static async Task<BookDetailDto> CreateBookAsync(HttpClient client) =>
-        (await (await client.PostAsJsonAsync("/api/books",
-            new CreatePhysicalBookRequest { Title = "版本書", Location = "A" }))
-            .Content.ReadFromJsonAsync<BookDetailDto>())!;
-
-    [Fact]
-    public async Task Add_physical_copy_to_existing_book()
+    // 數位版本由掃描產生；測試直接以 DbContext 植入一本含數位檔的書。
+    private async Task<(Guid bookId, Guid copyId, string file)> SeedDigitalAsync()
     {
-        var client = _factory.CreateClient();
-        var book = await CreateBookAsync(client);
+        var file = Path.Combine(Path.GetTempPath(), $"copytest_{Guid.NewGuid():N}.epub");
+        await File.WriteAllTextAsync(file, "dummy");
 
-        var resp = await client.PostAsJsonAsync($"/api/books/{book.Id}/copies",
-            new AddPhysicalCopyRequest { Location = "B 櫃" });
-        resp.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var detail = await client.GetFromJsonAsync<BookDetailDto>($"/api/books/{book.Id}");
-        detail!.Copies.Count(c => c.Type == "physical").Should().Be(2);
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<KnovaultDbContext>();
+        var book = new Book("數位書");
+        var copy = new DigitalCopy(file, BookFormat.Epub, 5, "h", DateTimeOffset.UtcNow, null);
+        book.AddCopy(copy);
+        db.Books.Add(book);
+        await db.SaveChangesAsync();
+        return (book.Id, copy.Id, file);
     }
 
     [Fact]
-    public async Task Update_and_delete_copy()
+    public async Task Download_digital_copy_returns_file()
     {
-        var client = _factory.CreateClient();
-        var book = await CreateBookAsync(client);
-        var copyId = book.Copies.Single(c => c.Type == "physical").Id;
+        var (_, copyId, file) = await SeedDigitalAsync();
+        try
+        {
+            var resp = await _factory.CreateClient().GetAsync($"/api/copies/{copyId}/file");
+            resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        finally { File.Delete(file); }
+    }
 
-        var put = await client.PutAsJsonAsync($"/api/copies/{copyId}",
-            new UpdateCopyRequest { Location = "新位置" });
-        put.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var afterPut = await client.GetFromJsonAsync<BookDetailDto>($"/api/books/{book.Id}");
-        afterPut!.Copies.Single().Location.Should().Be("新位置");
-
-        var del = await client.DeleteAsync($"/api/copies/{copyId}");
-        del.StatusCode.Should().Be(HttpStatusCode.NoContent);
-
-        var afterDel = await client.GetFromJsonAsync<BookDetailDto>($"/api/books/{book.Id}");
-        afterDel!.Copies.Should().BeEmpty();
+    [Fact]
+    public async Task Delete_digital_copy_removes_it()
+    {
+        var (bookId, copyId, file) = await SeedDigitalAsync();
+        try
+        {
+            var client = _factory.CreateClient();
+            (await client.DeleteAsync($"/api/copies/{copyId}")).StatusCode.Should().Be(HttpStatusCode.NoContent);
+            var detail = await client.GetFromJsonAsync<BookDetailDto>($"/api/books/{bookId}");
+            detail!.Copies.Should().BeEmpty();
+        }
+        finally { File.Delete(file); }
     }
 }

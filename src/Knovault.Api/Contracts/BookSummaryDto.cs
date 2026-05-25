@@ -7,7 +7,7 @@ public sealed record BookSummaryDto
     public IReadOnlyList<string> Authors { get; init; } = Array.Empty<string>();
     public string? CoverPath { get; init; }
     public string ReadingStatus { get; init; } = "";
-    public int? ProgressPercent { get; init; }
     public bool HasDigital { get; init; }
     public bool HasPhysical { get; init; }
+    public IReadOnlyList<string> Tags { get; init; } = Array.Empty<string>();
 }

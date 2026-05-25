@@ -1,5 +1,4 @@
 using Knovault.Domain.Enums;
-using Knovault.Domain.ValueObjects;
 
 namespace Knovault.Domain.Entities;
 
@@ -15,7 +14,9 @@ public class Book
     public string? Isbn { get; private set; }
     public string? CoverPath { get; private set; }
     public ReadingStatus ReadingStatus { get; private set; }
-    public ReadingProgress Progress { get; private set; }
+    public bool IsPhysical { get; private set; }
+    public string? PhysicalLocation { get; private set; }
+    public string? PhysicalNotes { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
@@ -29,9 +30,9 @@ public class Book
     public IReadOnlyList<Tag> Tags => _tags;
 
     public bool HasDigital => _copies.Any(c => c is DigitalCopy);
-    public bool HasPhysical => _copies.Any(c => c is PhysicalCopy);
+    public bool HasPhysical => IsPhysical;
 
-    private Book() { Title = null!; Progress = ReadingProgress.Empty; } // EF
+    private Book() { Title = null!; } // EF
 
     public Book(string title)
     {
@@ -41,7 +42,6 @@ public class Book
         Id = Guid.NewGuid();
         Title = title.Trim();
         ReadingStatus = ReadingStatus.None;
-        Progress = ReadingProgress.Empty;
         CreatedAt = UpdatedAt = DateTimeOffset.UtcNow;
     }
 
@@ -88,15 +88,28 @@ public class Book
         Touch();
     }
 
-    public void SetProgress(ReadingProgress progress)
-    {
-        Progress = progress ?? ReadingProgress.Empty;
-        Touch();
-    }
-
     public void SetCoverPath(string? coverPath)
     {
         CoverPath = coverPath;
+        Touch();
+    }
+
+    public void SetPhysical(bool isPhysical)
+    {
+        IsPhysical = isPhysical;
+        if (!isPhysical)
+        {
+            PhysicalLocation = null;
+            PhysicalNotes = null;
+        }
+        Touch();
+    }
+
+    public void SetPhysicalInfo(bool isPhysical, string? location, string? notes)
+    {
+        IsPhysical = isPhysical;
+        PhysicalLocation = isPhysical ? (location?.Trim() is { Length: > 0 } loc ? loc : null) : null;
+        PhysicalNotes = isPhysical ? (notes?.Trim() is { Length: > 0 } n ? n : null) : null;
         Touch();
     }
 

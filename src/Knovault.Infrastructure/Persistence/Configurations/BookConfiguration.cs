@@ -13,15 +13,6 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
         builder.Property(b => b.Title).IsRequired();
         builder.Property(b => b.ReadingStatus).HasConversion<string>();
 
-        // 閱讀進度：owned 值物件（必填；三欄皆可空）
-        builder.OwnsOne(b => b.Progress, p =>
-        {
-            p.Property(x => x.Percent).HasColumnName("ProgressPercent");
-            p.Property(x => x.CurrentPage).HasColumnName("ProgressCurrentPage");
-            p.Property(x => x.TotalPages).HasColumnName("ProgressTotalPages");
-        });
-        builder.Navigation(b => b.Progress).IsRequired();
-
         // 作者：owned 有序集合，對應私有欄位 _authors
         builder.OwnsMany(b => b.Authors, a =>
         {

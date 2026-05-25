@@ -17,11 +17,16 @@ node_modules/
 dist/
 dist-ssr/
 .vite/
+dev-dist/
 *.local
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# ─── Vite build output (前端產物，由 `npm run build` 重生) ───
+# web/ 打包後落在 Api 的 wwwroot；視為可重建產物，不進版控。
+src/Knovault.Api/wwwroot/
 
 # ─── 應用執行期資料 (不該進版控) ─────────────────────
 # Knovault 執行期會在 %AppData%\Knovault 建立資料，

@@ -18,7 +18,8 @@ public static class MetadataEndpoints
                 Publisher = meta.Publisher,
                 PublishedDate = meta.PublishedDate,
                 Isbn = meta.Isbn,
-                PageCount = meta.PageCount
+                PageCount = meta.PageCount,
+                CoverUrl = meta.CoverUrl
             });
         });
     }

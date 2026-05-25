@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Knovault.Domain.Entities;
 using Knovault.Domain.Enums;
-using Knovault.Domain.ValueObjects;
 using Xunit;
 
 namespace Knovault.Domain.Tests;
@@ -17,7 +16,6 @@ public class BookTests
         book.Id.Should().NotBe(Guid.Empty);
         book.Title.Should().Be("Clean Architecture");
         book.ReadingStatus.Should().Be(ReadingStatus.None);
-        book.Progress.Should().BeSameAs(ReadingProgress.Empty);
         book.HasDigital.Should().BeFalse();
         book.HasPhysical.Should().BeFalse();
     }
@@ -32,17 +30,16 @@ public class BookTests
     }
 
     [Fact]
-    public void AddCopy_sets_bookId_and_flags()
+    public void AddCopy_and_SetPhysical_set_flags()
     {
         var book = NewBook();
         var digital = new DigitalCopy("C:/a.epub", BookFormat.Epub, 1, "h", DateTimeOffset.UtcNow, null);
-        var physical = new PhysicalCopy("書房");
 
         book.AddCopy(digital);
-        book.AddCopy(physical);
+        book.SetPhysical(true);
 
         digital.BookId.Should().Be(book.Id);
-        book.Copies.Should().HaveCount(2);
+        book.Copies.Should().ContainSingle();
         book.HasDigital.Should().BeTrue();
         book.HasPhysical.Should().BeTrue();
     }
@@ -70,15 +67,13 @@ public class BookTests
     }
 
     [Fact]
-    public void SetProgress_and_status_update_timestamp()
+    public void SetReadingStatus_to_WantToRead_updates_timestamp()
     {
         var book = NewBook();
         var before = book.UpdatedAt;
-        book.SetReadingStatus(ReadingStatus.Reading);
-        book.SetProgress(ReadingProgress.Create(percent: 30));
+        book.SetReadingStatus(ReadingStatus.WantToRead);
 
-        book.ReadingStatus.Should().Be(ReadingStatus.Reading);
-        book.Progress.Percent.Should().Be(30);
+        book.ReadingStatus.Should().Be(ReadingStatus.WantToRead);
         book.UpdatedAt.Should().BeOnOrAfter(before);
     }
 
@@ -88,5 +83,40 @@ public class BookTests
         var book = NewBook();
         var act = () => book.UpdateMetadata("", null, null, null, null, null, null);
         act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void SetPhysicalInfo_with_true_sets_location_and_notes()
+    {
+        var book = NewBook();
+        book.SetPhysicalInfo(true, "書房 B 櫃-第3層", "借給小明");
+
+        book.IsPhysical.Should().BeTrue();
+        book.PhysicalLocation.Should().Be("書房 B 櫃-第3層");
+        book.PhysicalNotes.Should().Be("借給小明");
+        book.HasPhysical.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SetPhysicalInfo_with_false_clears_location_and_notes()
+    {
+        var book = NewBook();
+        book.SetPhysicalInfo(true, "書房 A 櫃", "備註");
+        book.SetPhysicalInfo(false, null, null);
+
+        book.IsPhysical.Should().BeFalse();
+        book.PhysicalLocation.Should().BeNull();
+        book.PhysicalNotes.Should().BeNull();
+    }
+
+    [Fact]
+    public void SetPhysicalInfo_trims_whitespace_only_to_null()
+    {
+        var book = NewBook();
+        book.SetPhysicalInfo(true, "   ", "  ");
+
+        book.IsPhysical.Should().BeTrue();
+        book.PhysicalLocation.Should().BeNull();
+        book.PhysicalNotes.Should().BeNull();
     }
 }

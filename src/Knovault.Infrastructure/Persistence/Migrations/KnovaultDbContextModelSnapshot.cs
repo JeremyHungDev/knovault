@@ -47,10 +47,19 @@ namespace Knovault.Infrastructure.Persistence.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsPhysical")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Isbn")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Language")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhysicalLocation")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhysicalNotes")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PublishedDate")
@@ -203,19 +212,6 @@ namespace Knovault.Infrastructure.Persistence.Migrations
                     b.HasDiscriminator().HasValue("Digital");
                 });
 
-            modelBuilder.Entity("Knovault.Domain.Entities.PhysicalCopy", b =>
-                {
-                    b.HasBaseType("Knovault.Domain.Entities.BookCopy");
-
-                    b.Property<DateOnly?>("AcquiredDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("TEXT");
-
-                    b.HasDiscriminator().HasValue("Physical");
-                });
-
             modelBuilder.Entity("BookTag", b =>
                 {
                     b.HasOne("Knovault.Domain.Entities.Book", null)
@@ -253,35 +249,7 @@ namespace Knovault.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("BookId");
                         });
 
-                    b.OwnsOne("Knovault.Domain.ValueObjects.ReadingProgress", "Progress", b1 =>
-                        {
-                            b1.Property<Guid>("BookId")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<int?>("CurrentPage")
-                                .HasColumnType("INTEGER")
-                                .HasColumnName("ProgressCurrentPage");
-
-                            b1.Property<int?>("Percent")
-                                .HasColumnType("INTEGER")
-                                .HasColumnName("ProgressPercent");
-
-                            b1.Property<int?>("TotalPages")
-                                .HasColumnType("INTEGER")
-                                .HasColumnName("ProgressTotalPages");
-
-                            b1.HasKey("BookId");
-
-                            b1.ToTable("Books");
-
-                            b1.WithOwner()
-                                .HasForeignKey("BookId");
-                        });
-
                     b.Navigation("Authors");
-
-                    b.Navigation("Progress")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Knovault.Domain.Entities.BookCopy", b =>

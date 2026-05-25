@@ -12,9 +12,9 @@ public static class BookMappings
         Authors = b.Authors.Select(a => a.Name).ToList(),
         CoverPath = b.CoverPath,
         ReadingStatus = b.ReadingStatus.ToString(),
-        ProgressPercent = b.Progress.Percent,
         HasDigital = b.HasDigital,
-        HasPhysical = b.HasPhysical
+        HasPhysical = b.HasPhysical,
+        Tags = b.Tags.Select(t => t.Name).ToList()
     };
 
     public static BookDetailDto ToDetailDto(this Book b) => new()
@@ -30,30 +30,20 @@ public static class BookMappings
         Isbn = b.Isbn,
         CoverPath = b.CoverPath,
         ReadingStatus = b.ReadingStatus.ToString(),
-        ProgressPercent = b.Progress.Percent,
-        CurrentPage = b.Progress.CurrentPage,
-        TotalPages = b.Progress.TotalPages,
+        HasDigital = b.HasDigital,
+        IsPhysical = b.IsPhysical,
+        PhysicalLocation = b.PhysicalLocation,
+        PhysicalNotes = b.PhysicalNotes,
         Tags = b.Tags.Select(t => t.Name).ToList(),
-        Copies = b.Copies.Select(ToCopyDto).ToList()
+        Copies = b.Copies.OfType<DigitalCopy>().Select(ToCopyDto).ToList()
     };
 
-    private static CopyDto ToCopyDto(BookCopy c) => c switch
+    private static CopyDto ToCopyDto(DigitalCopy d) => new()
     {
-        DigitalCopy d => new CopyDto
-        {
-            Id = d.Id,
-            Type = "digital",
-            Format = d.Format.ToString(),
-            FileSizeBytes = d.FileSizeBytes,
-            IsMissing = d.IsMissing,
-            ParseFailed = d.ParseFailed
-        },
-        PhysicalCopy p => new CopyDto
-        {
-            Id = p.Id,
-            Type = "physical",
-            Location = p.Location
-        },
-        _ => new CopyDto { Id = c.Id, Type = "unknown" }
+        Id = d.Id,
+        Format = d.Format.ToString(),
+        FileSizeBytes = d.FileSizeBytes,
+        IsMissing = d.IsMissing,
+        ParseFailed = d.ParseFailed
     };
 }

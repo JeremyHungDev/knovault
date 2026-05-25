@@ -4,7 +4,6 @@ using Knovault.Application.Files;
 using Knovault.Application.Library;
 using Knovault.Domain.Entities;
 using Knovault.Domain.Enums;
-using Knovault.Domain.ValueObjects;
 using Knovault.Infrastructure.Parsing;
 using Knovault.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -130,9 +129,6 @@ public sealed class LibraryScanService : ILibraryScanService
         var book = new Book(title);
         book.SetAuthors(meta.Authors);
         book.UpdateMetadata(title, null, meta.Language, meta.Publisher, meta.PublishedDate, meta.Description, meta.Isbn);
-        if (meta.PageCount is int pages)
-            book.SetProgress(ReadingProgress.Create(totalPages: pages));
-
         var copy = new DigitalCopy(file, format, info.Length, hash,
             new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero), folderId);
         if (failed) copy.MarkParseFailed();
