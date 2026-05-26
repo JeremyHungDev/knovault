@@ -14,9 +14,9 @@
 |--------|------|-------------|
 | 1. 書庫核心（已完成） | 領域模型、API、UI 地基 | — |
 | **1.5（本文件）** | **Related Books 屬性計分** | ✅ 現在實作 |
-| 4. 搜尋與進階 | 全文 + 向量搜尋 | 未來換掉計分策略即可 |
+| 4. 搜尋與進階（選做） | 全文 + 向量搜尋 | 若實作，換掉計分策略即可 |
 
-Related Books 是子專案 1 的自然延伸，同時為子專案 4 的向量搜尋預留擴充介面。子專案 4 屆時只需在 Infrastructure 新增 `EmbeddingRelatedBooksStrategy`，並透過 DI 替換，**前端與 API 介面完全不動**。
+Related Books 是子專案 1 的自然延伸。`IRelatedBooksStrategy` 介面**預留**向量 embedding 的擴充點——若未來決定實作語意搜尋，只需在 Infrastructure 新增 `EmbeddingRelatedBooksStrategy` 並透過 DI 替換，**前端與 API 介面完全不動**。向量搜尋本身不在本文件範疇，也不承諾一定實作。
 
 ---
 
@@ -48,19 +48,23 @@ Infrastructure  ← 新增 AttributeRelatedBooksStrategy 實作
 Api             ← 新增 GET /api/books/{id}/related endpoint
 ```
 
-### 未來向量搜尋擴充路徑
+### 擴充點（選做，不承諾）
+
+若未來決定實作向量 embedding，擴充路徑如下：
 
 ```
-現在（屬性計分）                    未來（AI embedding）
+現在（屬性計分）                    若未來實作語意搜尋
 ──────────────────────────────      ────────────────────────────────────
-GET /api/books/{id}/related         GET /api/books/{id}/related   ← 同介面
+GET /api/books/{id}/related         GET /api/books/{id}/related   ← 介面不變
       ↓                                     ↓
-IRelatedBooksStrategy               IRelatedBooksStrategy         ← 同介面
+IRelatedBooksStrategy               IRelatedBooksStrategy         ← 介面不變
       ↓                                     ↓
 AttributeRelatedBooksStrategy       EmbeddingRelatedBooksStrategy ← 只換實作
       ↓                                     ↓
-Tags/Authors/Publisher JOIN         pgvector / sqlite-vec 查詢
+Tags/Authors/Publisher 記憶體計分    pgvector / sqlite-vec 查詢
 ```
+
+屬性計分本身完整可用，embedding 只是可選升級，不做也沒有缺口。
 
 ---
 
@@ -277,7 +281,7 @@ related: (id: string, limit = 10): Promise<BookSummary[]> =>
 
 | # | 決定 | 理由 |
 |---|------|------|
-| D21 | `IRelatedBooksStrategy` 介面抽象 | 子專案 4 換向量搜尋時只換實作，API/前端不動 |
+| D21 | `IRelatedBooksStrategy` 介面抽象 | 預留向量搜尋擴充點（不承諾實作）；若做，只換實作，API/前端不動 |
 | D22 | 計分：Authors ×3、Tags ×2、Publisher ×1 | 作者相關性最強；Publisher 為補充信號 |
 | D23 | 記憶體計分（撈全部書後在記憶體算） | 個人書庫規模可接受；避免複雜 SQL |
 | D24 | 回傳 `BookSummaryDto[]`，不建新 DTO | 現有 DTO 已含前端所需欄位 |
