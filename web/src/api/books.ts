@@ -42,4 +42,6 @@ export const booksApi = {
     form.append('file', file)
     return http.postForm<BookDetail>(`/books/${id}/cover`, form)
   },
+  related: (id: string, limit = 10): Promise<BookSummary[]> =>
+    http.get<BookSummary[]>(`/books/${id}/related?limit=${limit}`),
 }
