@@ -69,7 +69,7 @@ describe('BookFormView — 頁面標題區', () => {
     const wrapper = mountView()
     const btn = wrapper.find('.back-btn')
     expect(btn.exists()).toBe(true)
-    expect(btn.text()).toBe('← 返回')
+    expect(btn.text()).toBe('◀ 返回')
   })
 
   it('新增模式標題應顯示「新增實體書」', () => {

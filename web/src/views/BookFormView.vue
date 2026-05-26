@@ -144,7 +144,7 @@ async function submit() {
   <n-spin :show="loading">
     <div class="page">
       <div class="page-header">
-        <n-button text class="back-btn" @click="router.back()">← 返回</n-button>
+        <n-button text class="back-btn" @click="router.back()">◀ 返回</n-button>
         <h2>{{ isEdit ? "編輯書籍" : "新增實體書" }}</h2>
       </div>
 
