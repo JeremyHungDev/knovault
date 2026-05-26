@@ -29,10 +29,13 @@ public sealed class AttributeRelatedBooksStrategy(KnovaultDbContext db) : IRelat
                 Book  = b,
                 Score = b.Tags.Count(t => sourceTags.Contains(t.Id)) * 2
                       + b.Authors.Count(a => sourceAuthors.Contains(a.Name)) * 3
-                      + (b.Publisher != null && b.Publisher == source.Publisher ? 1 : 0)
+                      + (!string.IsNullOrWhiteSpace(source.Publisher)
+                         && string.Equals(b.Publisher, source.Publisher,
+                            StringComparison.OrdinalIgnoreCase) ? 1 : 0)
             })
             .Where(x => x.Score > 0)
             .OrderByDescending(x => x.Score)
+            .ThenBy(x => x.Book.Title)
             .Take(limit)
             .Select(x => x.Book)
             .ToList();

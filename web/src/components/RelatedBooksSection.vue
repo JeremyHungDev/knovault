@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { NEllipsis, NEmpty, NSpin, useMessage } from 'naive-ui'
 import { booksApi } from '@/api/books'
@@ -14,15 +14,19 @@ const loading = ref(true)
 const books = ref<BookSummary[]>([])
 const coverFailed = ref<Record<string, boolean>>({})
 
-onMounted(async () => {
+async function fetchRelated(bookId: string) {
+  loading.value = true
+  books.value = []
   try {
-    books.value = await booksApi.related(props.bookId)
+    books.value = await booksApi.related(bookId)
   } catch (e) {
     message.error(e instanceof Error ? e.message : '載入相關書籍失敗')
   } finally {
     loading.value = false
   }
-})
+}
+
+watch(() => props.bookId, fetchRelated, { immediate: true })
 </script>
 
 <template>
