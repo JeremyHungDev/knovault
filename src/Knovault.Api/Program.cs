@@ -6,11 +6,13 @@ using Knovault.Application.Files;
 using Knovault.Application.Library;
 using Knovault.Application.Metadata;
 using Knovault.Application.Parsing;
+using Knovault.Application.Related;
 using Knovault.Infrastructure.Covers;
 using Knovault.Infrastructure.Files;
 using Knovault.Infrastructure.Library;
 using Knovault.Infrastructure.Metadata;
 using Knovault.Infrastructure.Parsing;
+using Knovault.Infrastructure.Related;
 using Knovault.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,6 +45,7 @@ builder.Services.AddHttpClient<IIsbnMetadataProvider, OpenLibraryIsbnProvider>(c
 builder.Services.AddHttpClient<ICoverFetcher, HttpCoverFetcher>(c =>
     c.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddProblemDetails();
+builder.Services.AddScoped<IRelatedBooksStrategy, AttributeRelatedBooksStrategy>();
 
 var app = builder.Build();
 

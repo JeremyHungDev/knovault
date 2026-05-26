@@ -136,4 +136,50 @@ public class BookEndpointsTests : IClassFixture<TestApiFactory>
         var summary = list!.Items.Single(b => b.Id == book.Id);
         summary.Tags.Should().ContainSingle().Which.Should().Be("心理學");
     }
+
+    [Fact]
+    public async Task Related_returns_books_sharing_same_author()
+    {
+        var client = _factory.CreateClient();
+
+        var sourceResp = await client.PostAsJsonAsync("/api/books",
+            new CreatePhysicalBookRequest { Title = "Clean Code", Authors = new() { "Robert Martin" } });
+        var source = (await sourceResp.Content.ReadFromJsonAsync<BookDetailDto>())!;
+
+        await client.PostAsJsonAsync("/api/books",
+            new CreatePhysicalBookRequest { Title = "Clean Architecture", Authors = new() { "Robert Martin" } });
+
+        await client.PostAsJsonAsync("/api/books",
+            new CreatePhysicalBookRequest { Title = "Cooking Book", Authors = new() { "Chef A" } });
+
+        var result = await client.GetFromJsonAsync<BookSummaryDto[]>(
+            $"/api/books/{source.Id}/related");
+
+        result.Should().ContainSingle(b => b.Title == "Clean Architecture");
+        result.Should().NotContain(b => b.Title == "Cooking Book");
+        result.Should().NotContain(b => b.Id == source.Id);
+    }
+
+    [Fact]
+    public async Task Related_returns_404_for_missing_book()
+    {
+        var client = _factory.CreateClient();
+        var resp = await client.GetAsync($"/api/books/{Guid.NewGuid()}/related");
+        resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Related_returns_empty_array_when_no_matching_books()
+    {
+        var client = _factory.CreateClient();
+
+        var createResp = await client.PostAsJsonAsync("/api/books",
+            new CreatePhysicalBookRequest { Title = "Lone Book", Authors = new() { "Solo Author" } });
+        var book = (await createResp.Content.ReadFromJsonAsync<BookDetailDto>())!;
+
+        var result = await client.GetFromJsonAsync<BookSummaryDto[]>(
+            $"/api/books/{book.Id}/related");
+
+        result.Should().BeEmpty();
+    }
 }

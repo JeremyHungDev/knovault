@@ -1,6 +1,7 @@
 using Knovault.Api.Contracts;
 using Knovault.Api.Mapping;
 using Knovault.Application.Covers;
+using Knovault.Application.Related;
 using Knovault.Domain.Entities;
 using Knovault.Domain.Enums;
 using Knovault.Infrastructure.Persistence;
@@ -25,6 +26,7 @@ public static class BookEndpoints
         group.MapGet("/{id:guid}/cover/thumb", (Guid id, KnovaultDbContext db, ICoverStore covers, CancellationToken ct) =>
             ServeCover(id, db, covers, thumb: true, ct));
         group.MapPost("/{id:guid}/cover", UploadCover).DisableAntiforgery();
+        group.MapGet("/{id:guid}/related", GetRelated);
     }
 
     private static async Task<IResult> ListBooks(KnovaultDbContext db, string? search, int page = 1, int pageSize = 24)
@@ -143,5 +145,24 @@ public static class BookEndpoints
         if (!File.Exists(file)) return Results.NotFound();
         var contentType = thumb ? "image/jpeg" : "application/octet-stream";
         return Results.File(file, contentType);
+    }
+
+    private static async Task<IResult> GetRelated(
+        KnovaultDbContext db,
+        IRelatedBooksStrategy strategy,
+        Guid id,
+        int limit = 10,
+        CancellationToken ct = default)
+    {
+        limit = Math.Clamp(limit, 1, 50);
+
+        var book = await db.Books
+            .Include(b => b.Tags)
+            .FirstOrDefaultAsync(b => b.Id == id, ct);
+
+        if (book is null) return Results.NotFound();
+
+        var related = await strategy.GetRelatedAsync(book, limit, ct);
+        return Results.Ok(related.Select(b => b.ToSummaryDto()).ToList());
     }
 }
