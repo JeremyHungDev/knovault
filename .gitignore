@@ -35,6 +35,7 @@ src/Knovault.Api/wwwroot/
 *.db-shm
 *.db-wal
 covers/
+!src/**/[Cc]overs/
 logs/
 config.json
 
