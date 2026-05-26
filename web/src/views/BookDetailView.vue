@@ -8,7 +8,8 @@ import {
   NSpin,
   NAlert,
   NSelect,
-  NDivider,
+  NTabs,
+  NTabPane,
   NList,
   NListItem,
   NThing,
@@ -32,6 +33,7 @@ import {
   authorsLine,
   formatFileSize,
 } from '@/utils/format'
+import RelatedBooksSection from '@/components/RelatedBooksSection.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -321,77 +323,84 @@ async function savePhysical() {
         </div>
       </div>
 
-      <template v-if="book.description">
-        <n-divider>簡介</n-divider>
-        <p class="description">{{ book.description }}</p>
-      </template>
+      <n-tabs type="line" animated class="detail-tabs">
+        <n-tab-pane name="description" tab="簡介">
+          <p v-if="book.description" class="description">{{ book.description }}</p>
+          <n-empty v-else description="暫無簡介" />
+        </n-tab-pane>
 
-      <!-- 版本面板 -->
-      <n-divider>版本</n-divider>
-      <div class="versions-toolbar">
-        <n-button
-          v-if="!book.isPhysical"
-          size="small"
-          @click="openAddPhysical"
-        >
-          ＋ 新增實體版本
-        </n-button>
-      </div>
+        <n-tab-pane name="copies" tab="版本">
+          <!-- 版本面板 -->
+          <div class="versions-toolbar">
+            <n-button
+              v-if="!book.isPhysical"
+              size="small"
+              @click="openAddPhysical"
+            >
+              ＋ 新增實體版本
+            </n-button>
+          </div>
 
-      <n-empty
-        v-if="!book.isPhysical && book.copies.length === 0"
-        size="small"
-        description="尚無版本，可新增實體版本或掃描書庫資料夾"
-      />
+          <n-empty
+            v-if="!book.isPhysical && book.copies.length === 0"
+            size="small"
+            description="尚無版本，可新增實體版本或掃描書庫資料夾"
+          />
 
-      <n-list v-else bordered>
-        <!-- 實體列 -->
-        <n-list-item v-if="book.isPhysical">
-          <n-thing>
-            <template #header>🏠 實體書</template>
-            <template #description>
-              <div v-if="book.physicalLocation" class="copy-meta">
-                📍 {{ book.physicalLocation }}
-              </div>
-              <div v-if="book.physicalNotes" class="copy-meta">
-                📝 {{ book.physicalNotes }}
-              </div>
-            </template>
-          </n-thing>
-          <template #suffix>
-            <n-button size="small" @click="openEditPhysical">📝 編輯</n-button>
-          </template>
-        </n-list-item>
-
-        <!-- 數位檔列 -->
-        <n-list-item v-for="c in book.copies" :key="c.id">
-          <n-thing>
-            <template #header>
-              {{ copyFormatLabel(c) }}
-              <span class="dim">{{ formatFileSize(c.fileSizeBytes) }}</span>
-              <n-tag v-if="c.isMissing" type="error" size="small" :bordered="false">
-                ⚠ 檔案遺失
-              </n-tag>
-              <n-tag v-if="c.parseFailed" type="warning" size="small" :bordered="false">
-                ⚠ 解析失敗
-              </n-tag>
-            </template>
-          </n-thing>
-          <template #suffix>
-            <n-space>
-              <n-button v-if="!c.isMissing" size="small" @click="download(c)">
-                📥 下載
-              </n-button>
-              <n-popconfirm @positive-click="removeCopy(c)">
-                <template #trigger>
-                  <n-button size="small" quaternary type="error">移除</n-button>
+          <n-list v-else bordered>
+            <!-- 實體列 -->
+            <n-list-item v-if="book.isPhysical">
+              <n-thing>
+                <template #header>🏠 實體書</template>
+                <template #description>
+                  <div v-if="book.physicalLocation" class="copy-meta">
+                    📍 {{ book.physicalLocation }}
+                  </div>
+                  <div v-if="book.physicalNotes" class="copy-meta">
+                    📝 {{ book.physicalNotes }}
+                  </div>
                 </template>
-                確定移除此數位檔紀錄？（不刪硬碟檔）
-              </n-popconfirm>
-            </n-space>
-          </template>
-        </n-list-item>
-      </n-list>
+              </n-thing>
+              <template #suffix>
+                <n-button size="small" @click="openEditPhysical">📝 編輯</n-button>
+              </template>
+            </n-list-item>
+
+            <!-- 數位檔列 -->
+            <n-list-item v-for="c in book.copies" :key="c.id">
+              <n-thing>
+                <template #header>
+                  {{ copyFormatLabel(c) }}
+                  <span class="dim">{{ formatFileSize(c.fileSizeBytes) }}</span>
+                  <n-tag v-if="c.isMissing" type="error" size="small" :bordered="false">
+                    ⚠ 檔案遺失
+                  </n-tag>
+                  <n-tag v-if="c.parseFailed" type="warning" size="small" :bordered="false">
+                    ⚠ 解析失敗
+                  </n-tag>
+                </template>
+              </n-thing>
+              <template #suffix>
+                <n-space>
+                  <n-button v-if="!c.isMissing" size="small" @click="download(c)">
+                    📥 下載
+                  </n-button>
+                  <n-popconfirm @positive-click="removeCopy(c)">
+                    <template #trigger>
+                      <n-button size="small" quaternary type="error">移除</n-button>
+                    </template>
+                    確定移除此數位檔紀錄？（不刪硬碟檔）
+                  </n-popconfirm>
+                </n-space>
+              </template>
+            </n-list-item>
+          </n-list>
+        </n-tab-pane>
+
+        <n-tab-pane name="related" tab="相關書籍">
+          <related-books-section :book-id="id" />
+        </n-tab-pane>
+      </n-tabs>
 
       <!-- 新增 / 編輯實體版本 modal -->
       <n-modal
@@ -581,5 +590,8 @@ async function savePhysical() {
 }
 .add-copy {
   margin-top: 12px;
+}
+.detail-tabs {
+  margin-top: 24px;
 }
 </style>
