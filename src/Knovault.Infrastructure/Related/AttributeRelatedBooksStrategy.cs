@@ -17,6 +17,7 @@ public sealed class AttributeRelatedBooksStrategy(KnovaultDbContext db) : IRelat
             .Select(a => a.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+        // Authors 是 OwnsMany，EF Core 查詢時自動載入；Tags 需要明確 Include
         var candidates = await db.Books
             .Include(b => b.Tags)
             .Where(b => b.Id != source.Id)
