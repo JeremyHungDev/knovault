@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { NEllipsis, NEmpty, NSpin } from 'naive-ui'
+import { NEllipsis, NEmpty, NSpin, useMessage } from 'naive-ui'
 import { booksApi } from '@/api/books'
 import { coverThumbUrl } from '@/api/http'
 import type { BookSummary } from '@/api/types'
@@ -9,12 +9,16 @@ import type { BookSummary } from '@/api/types'
 const props = defineProps<{ bookId: string }>()
 
 const router = useRouter()
+const message = useMessage()
 const loading = ref(true)
 const books = ref<BookSummary[]>([])
+const coverFailed = ref<Record<string, boolean>>({})
 
 onMounted(async () => {
   try {
     books.value = await booksApi.related(props.bookId)
+  } catch (e) {
+    message.error(e instanceof Error ? e.message : '載入相關書籍失敗')
   } finally {
     loading.value = false
   }
@@ -35,13 +39,15 @@ onMounted(async () => {
         @keydown.enter="router.push(`/books/${book.id}`)"
       >
         <img
-          v-if="book.coverPath"
+          v-if="book.coverPath && !coverFailed[book.id]"
           :src="coverThumbUrl(book.id)"
           :alt="book.title"
           class="related-cover"
+          loading="lazy"
+          @error="coverFailed[book.id] = true"
         />
         <div v-else class="related-cover related-placeholder">
-          {{ book.title.slice(0, 1) }}
+          {{ book.title.slice(0, 1) || '書' }}
         </div>
         <n-ellipsis class="related-title">{{ book.title }}</n-ellipsis>
       </div>

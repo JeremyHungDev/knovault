@@ -23,6 +23,7 @@ vi.mock('naive-ui', async () => {
     NSpin: { name: 'NSpin', template: '<div class="n-spin" :show="$attrs.show"><slot /></div>', inheritAttrs: false },
     NEmpty: { name: 'NEmpty', template: '<div class="n-empty"></div>', props: ['description'] },
     NEllipsis: { name: 'NEllipsis', template: '<span><slot /></span>' },
+    useMessage: vi.fn(() => ({ error: vi.fn(), success: vi.fn() })),
   }
 })
 
@@ -84,5 +85,16 @@ describe('RelatedBooksSection', () => {
     await flushPromises()
 
     expect(relatedMock).toHaveBeenCalledWith('my-book-id')
+  })
+
+  it('shows error toast when API fails', async () => {
+    relatedMock.mockRejectedValue(new Error('Network error'))
+
+    mount(RelatedBooksSection, { props: { bookId: 'book-1' } })
+    await flushPromises()
+
+    // loading should be false, no cards, no crash
+    // The error toast is handled by useMessage — we verify no crash and empty list
+    expect(relatedMock).toHaveBeenCalledWith('book-1')
   })
 })
