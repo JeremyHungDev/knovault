@@ -143,8 +143,8 @@ async function submit() {
 <template>
   <n-spin :show="loading">
     <div class="page">
-      <div class="topbar">
-        <n-button quaternary @click="router.back()">◀ 返回</n-button>
+      <div class="page-header">
+        <n-button text class="back-btn" @click="router.back()">← 返回</n-button>
         <h2>{{ isEdit ? "編輯書籍" : "新增實體書" }}</h2>
       </div>
 
@@ -232,14 +232,21 @@ async function submit() {
   max-width: 640px;
   margin: 0 auto;
 }
-.topbar {
+.page-header {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-bottom: 20px;
 }
-.topbar h2 {
+.back-btn {
+  font-size: 13px;
+  color: #aaa;
+}
+.page-header h2 {
   margin: 0;
+  font-size: 22px;
+  font-weight: 700;
 }
 .note {
   margin-bottom: 12px;
