@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   NButton,
@@ -42,6 +42,12 @@ const tagsStore = useTagsStore()
 const { tags: allTags } = storeToRefs(tagsStore)
 
 const id = computed(() => route.params.id as string)
+
+// 同一元件複用（/books/A → /books/B）時重新載入
+watch(id, () => {
+  load()
+  tagsStore.fetch()
+})
 const book = ref<BookDetail | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)

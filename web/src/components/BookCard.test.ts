@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { setActivePinia, createPinia } from 'pinia'
 import BookCard from './BookCard.vue'
 import type { BookSummary } from '@/api/types'
 
@@ -7,6 +8,10 @@ const pushMock = vi.fn()
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: pushMock }),
 }))
+
+beforeEach(() => {
+  setActivePinia(createPinia())
+})
 
 // 部分 mock naive-ui：保留其餘 export，只覆蓋 composables 與常用元件
 vi.mock('naive-ui', async () => {
@@ -55,10 +60,10 @@ describe('BookCard', () => {
     expect(img.attributes('src')).toContain('/api/books/abc/cover/thumb')
   })
 
-  it('navigates to detail on card click', async () => {
+  it('navigates to detail on info-bar click', async () => {
     pushMock.mockClear()
     const w = mount(BookCard, { props: { book: makeBook() } })
-    await w.find('.book-card').trigger('click')
+    await w.find('.info-bar').trigger('click')
     expect(pushMock).toHaveBeenCalledWith('/books/abc')
   })
 

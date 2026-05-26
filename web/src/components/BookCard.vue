@@ -167,13 +167,11 @@ async function handleSelect(key: string) {
 }
 .info-bar {
   cursor: pointer;
-  /* 固定高度：1行書名(17) + gap(4) + 作者列(18) + 上下padding(16) ≈ 55px */
-  height: 55px;
+  min-height: 55px;
   padding: 8px 6px 8px 10px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  overflow: hidden;
   box-sizing: border-box;
 }
 /* Dark mode */
@@ -217,7 +215,6 @@ async function handleSelect(key: string) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex-shrink: 1;
   min-width: 0;
 }
 .author-row {
