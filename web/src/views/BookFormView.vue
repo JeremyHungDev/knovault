@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, onMounted, reactive, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import {
   NForm,
   NFormItem,
   NInput,
-  NInputNumber,
   NButton,
   NSpace,
   NInputGroup,
@@ -13,96 +12,98 @@ import {
   NAlert,
   NSpin,
   useMessage,
-} from 'naive-ui'
-import { booksApi } from '@/api/books'
-import { libraryApi } from '@/api/library'
+} from "naive-ui";
+import { booksApi } from "@/api/books";
+import { libraryApi } from "@/api/library";
 
-const route = useRoute()
-const router = useRouter()
-const message = useMessage()
+const route = useRoute();
+const router = useRouter();
+const message = useMessage();
 
-const editId = computed(() => (route.name === 'book-edit' ? (route.params.id as string) : null))
-const isEdit = computed(() => editId.value != null)
+const editId = computed(() =>
+  route.name === "book-edit" ? (route.params.id as string) : null,
+);
+const isEdit = computed(() => editId.value != null);
 
 const form = reactive({
-  title: '',
-  subtitle: '' as string,
+  title: "",
+  subtitle: "" as string,
   authors: [] as string[],
-  isbn: '',
-  publisher: '',
-  publishedDate: '',
-  language: '',
-  description: '',
+  isbn: "",
+  publisher: "",
+  publishedDate: "",
+  language: "",
+  description: "",
   coverUrl: null as string | null,
   isPhysical: false,
-})
+});
 
-const loading = ref(false)
-const saving = ref(false)
-const isbnLooking = ref(false)
-const lookupNote = ref<string | null>(null)
+const loading = ref(false);
+const saving = ref(false);
+const isbnLooking = ref(false);
+const lookupNote = ref<string | null>(null);
 
 onMounted(async () => {
   if (isEdit.value && editId.value) {
-    loading.value = true
+    loading.value = true;
     try {
-      const b = await booksApi.get(editId.value)
-      form.title = b.title
-      form.subtitle = b.subtitle ?? ''
-      form.authors = [...b.authors]
-      form.isbn = b.isbn ?? ''
-      form.publisher = b.publisher ?? ''
-      form.publishedDate = b.publishedDate ?? ''
-      form.language = b.language ?? ''
-      form.description = b.description ?? ''
-      form.isPhysical = b.isPhysical
+      const b = await booksApi.get(editId.value);
+      form.title = b.title;
+      form.subtitle = b.subtitle ?? "";
+      form.authors = [...b.authors];
+      form.isbn = b.isbn ?? "";
+      form.publisher = b.publisher ?? "";
+      form.publishedDate = b.publishedDate ?? "";
+      form.language = b.language ?? "";
+      form.description = b.description ?? "";
+      form.isPhysical = b.isPhysical;
     } catch (e) {
-      message.error(e instanceof Error ? e.message : '載入失敗')
+      message.error(e instanceof Error ? e.message : "載入失敗");
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
-})
+});
 
 async function lookupIsbn() {
-  const isbn = form.isbn.replace(/[-\s]/g, '').trim()
+  const isbn = form.isbn.replace(/[-\s]/g, "").trim();
   if (!isbn) {
-    message.warning('請先輸入 ISBN')
-    return
+    message.warning("請先輸入 ISBN");
+    return;
   }
-  form.isbn = isbn // 正規化欄位（去掉連字號/空白）
-  isbnLooking.value = true
-  lookupNote.value = null
+  form.isbn = isbn; // 正規化欄位（去掉連字號/空白）
+  isbnLooking.value = true;
+  lookupNote.value = null;
   try {
-    const meta = await libraryApi.isbnLookup(isbn)
-    if (meta.title) form.title = meta.title
-    if (meta.authors?.length) form.authors = [...meta.authors]
-    if (meta.publisher) form.publisher = meta.publisher
-    if (meta.publishedDate) form.publishedDate = meta.publishedDate
-    if (meta.isbn) form.isbn = meta.isbn
-    if (meta.coverUrl) form.coverUrl = meta.coverUrl
-    lookupNote.value = '已帶入查詢結果（含封面），可手動修改後儲存。'
+    const meta = await libraryApi.isbnLookup(isbn);
+    if (meta.title) form.title = meta.title;
+    if (meta.authors?.length) form.authors = [...meta.authors];
+    if (meta.publisher) form.publisher = meta.publisher;
+    if (meta.publishedDate) form.publishedDate = meta.publishedDate;
+    if (meta.isbn) form.isbn = meta.isbn;
+    if (meta.coverUrl) form.coverUrl = meta.coverUrl;
+    lookupNote.value = "已帶入查詢結果（含封面），可手動修改後儲存。";
   } catch (e) {
-    lookupNote.value = null
+    lookupNote.value = null;
     message.error(
       e instanceof Error
         ? `ISBN 查詢失敗：${e.message}，請改為手動填寫`
-        : 'ISBN 查詢失敗，請改為手動填寫',
-    )
+        : "ISBN 查詢失敗，請改為手動填寫",
+    );
   } finally {
-    isbnLooking.value = false
+    isbnLooking.value = false;
   }
 }
 
 async function submit() {
   if (!form.title.trim()) {
-    message.warning('書名為必填')
-    return
+    message.warning("書名為必填");
+    return;
   }
-  saving.value = true
+  saving.value = true;
   try {
-    const authors = form.authors.map((a) => a.trim()).filter(Boolean)
-    const isbn = form.isbn.replace(/[-\s]/g, '').trim() || null
+    const authors = form.authors.map((a) => a.trim()).filter(Boolean);
+    const isbn = form.isbn.replace(/[-\s]/g, "").trim() || null;
     if (isEdit.value && editId.value) {
       const updated = await booksApi.update(editId.value, {
         title: form.title.trim(),
@@ -114,9 +115,9 @@ async function submit() {
         description: form.description || null,
         isbn,
         isPhysical: form.isPhysical,
-      })
-      message.success('已儲存')
-      router.push(`/books/${updated.id}`)
+      });
+      message.success("已儲存");
+      router.push(`/books/${updated.id}`);
     } else {
       const created = await booksApi.createPhysical({
         title: form.title.trim(),
@@ -127,14 +128,14 @@ async function submit() {
         language: form.language || null,
         description: form.description || null,
         coverUrl: form.coverUrl,
-      })
-      message.success('已新增實體書')
-      router.push(`/books/${created.id}`)
+      });
+      message.success("已新增實體書");
+      router.push(`/books/${created.id}`);
     }
   } catch (e) {
-    message.error(e instanceof Error ? e.message : '儲存失敗')
+    message.error(e instanceof Error ? e.message : "儲存失敗");
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 </script>
@@ -144,13 +145,16 @@ async function submit() {
     <div class="page">
       <div class="topbar">
         <n-button quaternary @click="router.back()">◀ 返回</n-button>
-        <h2>{{ isEdit ? '編輯書籍' : '新增實體書' }}</h2>
+        <h2>{{ isEdit ? "編輯書籍" : "新增實體書" }}</h2>
       </div>
 
       <n-form label-placement="top" class="form">
         <n-form-item label="ISBN（可線上查詢自動帶入；可不加連字號 -）">
           <n-input-group>
-            <n-input v-model:value="form.isbn" placeholder="例如 9780321125217（連字號 - 可省略）" />
+            <n-input
+              v-model:value="form.isbn"
+              placeholder="例如 9780321125217（連字號 - 可省略）"
+            />
             <n-button
               v-if="!isEdit"
               :loading="isbnLooking"
@@ -162,13 +166,20 @@ async function submit() {
             </n-button>
           </n-input-group>
         </n-form-item>
-        <n-alert v-if="lookupNote" type="success" :show-icon="false" class="note">
+        <n-alert
+          v-if="lookupNote"
+          type="success"
+          :show-icon="false"
+          class="note"
+        >
           {{ lookupNote }}
         </n-alert>
 
         <div v-if="form.coverUrl" class="cover-preview">
           <img :src="form.coverUrl" alt="封面預覽" />
-          <n-button text type="error" @click="form.coverUrl = null">移除封面</n-button>
+          <n-button text type="error" @click="form.coverUrl = null"
+            >移除封面</n-button
+          >
         </div>
 
         <n-form-item label="書名 *" required>
@@ -189,7 +200,10 @@ async function submit() {
           <n-input v-model:value="form.publisher" />
         </n-form-item>
         <n-form-item label="出版日期">
-          <n-input v-model:value="form.publishedDate" placeholder="如 2019 或 2019-03" />
+          <n-input
+            v-model:value="form.publishedDate"
+            placeholder="如 2019 或 2019-03"
+          />
         </n-form-item>
         <n-form-item label="語言">
           <n-input v-model:value="form.language" placeholder="如 zh-Hant" />
@@ -205,7 +219,7 @@ async function submit() {
         <n-space justify="end">
           <n-button @click="router.back()">取消</n-button>
           <n-button type="primary" :loading="saving" @click="submit">
-            {{ isEdit ? '儲存' : '新增' }}
+            {{ isEdit ? "儲存" : "新增" }}
           </n-button>
         </n-space>
       </n-form>
