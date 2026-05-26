@@ -1,0 +1,39 @@
+using Knovault.Application.Related;
+using Knovault.Domain.Entities;
+using Knovault.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+namespace Knovault.Infrastructure.Related;
+
+public sealed class AttributeRelatedBooksStrategy(KnovaultDbContext db) : IRelatedBooksStrategy
+{
+    public async Task<IReadOnlyList<Book>> GetRelatedAsync(
+        Book source,
+        int limit,
+        CancellationToken ct = default)
+    {
+        var sourceTags = source.Tags.Select(t => t.Id).ToHashSet();
+        var sourceAuthors = source.Authors
+            .Select(a => a.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var candidates = await db.Books
+            .Include(b => b.Tags)
+            .Where(b => b.Id != source.Id)
+            .ToListAsync(ct);
+
+        return candidates
+            .Select(b => new
+            {
+                Book  = b,
+                Score = b.Tags.Count(t => sourceTags.Contains(t.Id)) * 2
+                      + b.Authors.Count(a => sourceAuthors.Contains(a.Name)) * 3
+                      + (b.Publisher != null && b.Publisher == source.Publisher ? 1 : 0)
+            })
+            .Where(x => x.Score > 0)
+            .OrderByDescending(x => x.Score)
+            .Take(limit)
+            .Select(x => x.Book)
+            .ToList();
+    }
+}
