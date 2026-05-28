@@ -15,6 +15,7 @@ namespace Knovault.Api.Tests;
 public sealed class TestApiFactory : WebApplicationFactory<Program>
 {
     private readonly string _root = Path.Combine(Path.GetTempPath(), $"knovault_api_{Guid.NewGuid():N}");
+    private Action<IServiceCollection>? _serviceOverrides;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -32,7 +33,15 @@ public sealed class TestApiFactory : WebApplicationFactory<Program>
 
             services.RemoveAll(typeof(ICoverStore));
             services.AddSingleton<ICoverStore>(new CoverStorage(coversDir));
+
+            _serviceOverrides?.Invoke(services);
         });
+    }
+
+    public HttpClient CreateClientWith(Action<IServiceCollection> overrides)
+    {
+        _serviceOverrides = overrides;
+        return CreateClient();
     }
 
     protected override void Dispose(bool disposing)
