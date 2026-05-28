@@ -34,6 +34,7 @@ import {
   formatFileSize,
 } from '@/utils/format'
 import RelatedBooksSection from '@/components/RelatedBooksSection.vue'
+import ReviewsSection from '@/components/ReviewsSection.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -415,6 +416,10 @@ async function savePhysical() {
 
         <n-tab-pane name="related" tab="相關書籍">
           <related-books-section :book-id="id" />
+        </n-tab-pane>
+
+        <n-tab-pane name="reviews" tab="評論">
+          <reviews-section :book-id="id" :isbn="book.isbn" />
         </n-tab-pane>
       </n-tabs>
 
