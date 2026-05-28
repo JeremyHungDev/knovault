@@ -7,12 +7,14 @@ using Knovault.Application.Library;
 using Knovault.Application.Metadata;
 using Knovault.Application.Parsing;
 using Knovault.Application.Related;
+using Knovault.Application.Reviews;
 using Knovault.Infrastructure.Covers;
 using Knovault.Infrastructure.Files;
 using Knovault.Infrastructure.Library;
 using Knovault.Infrastructure.Metadata;
 using Knovault.Infrastructure.Parsing;
 using Knovault.Infrastructure.Related;
+using Knovault.Infrastructure.Reviews;
 using Knovault.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,6 +49,12 @@ builder.Services.AddHttpClient<ICoverFetcher, HttpCoverFetcher>(c =>
 builder.Services.AddProblemDetails();
 builder.Services.AddScoped<IRelatedBooksStrategy, AttributeRelatedBooksStrategy>();
 
+builder.Services.AddHttpClient<GoodreadsScraper>(c =>
+    c.Timeout = TimeSpan.FromSeconds(30));
+builder.Services.AddScoped<IBookReviewScraper>(sp => sp.GetRequiredService<GoodreadsScraper>());
+builder.Services.AddScoped<IBookReviewScraper, BooksComTwScraper>();
+builder.Services.AddScoped<IExternalReviewService, ExternalReviewService>();
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -63,6 +71,7 @@ app.MapCopyEndpoints();
 app.MapTagEndpoints();
 app.MapLibraryEndpoints();
 app.MapMetadataEndpoints();
+app.MapReviewEndpoints();
 app.MapFallbackToFile("index.html");
 
 if (!isTesting)
