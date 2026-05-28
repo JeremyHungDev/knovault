@@ -32,9 +32,9 @@ watch(() => props.bookId, fetchRelated, { immediate: true })
     <n-empty v-if="!loading && books.length === 0" description="暫無相關書籍" />
     <n-grid
       v-else-if="!loading"
-      cols="2 s:3 m:4 l:5 xl:6"
-      :x-gap="14"
-      :y-gap="14"
+      cols="3 s:4 m:5 l:6 xl:8"
+      :x-gap="10"
+      :y-gap="10"
       responsive="screen"
     >
       <n-grid-item v-for="book in books" :key="book.id">
