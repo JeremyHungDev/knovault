@@ -77,19 +77,19 @@ public class GoodreadsScraper : IBookReviewScraper
         return ParseReviewsResponse(json);
     }
 
-    public static string? ExtractLegacyId(string url)
+    internal static string? ExtractLegacyId(string url)
     {
         var m = Regex.Match(url, @"/book/show/(\d+)");
         return m.Success ? m.Groups[1].Value : null;
     }
 
-    public static string? ExtractWorkId(string html)
+    internal static string? ExtractWorkId(string html)
     {
         var m = Regex.Match(html, @"kca://work/[^""\\]+");
         return m.Success ? m.Value : null;
     }
 
-    public static IReadOnlyList<ScrapedReview> ParseReviewsResponse(string json)
+    internal static IReadOnlyList<ScrapedReview> ParseReviewsResponse(string json)
     {
         using var doc = JsonDocument.Parse(json);
         var edges = doc.RootElement
