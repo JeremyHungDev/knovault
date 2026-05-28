@@ -10,6 +10,7 @@ public class KnovaultDbContext : DbContext
     public DbSet<Book> Books => Set<Book>();
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<LibraryFolder> LibraryFolders => Set<LibraryFolder>();
+    public DbSet<ExternalReview> ExternalReviews => Set<ExternalReview>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
