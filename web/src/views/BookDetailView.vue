@@ -137,7 +137,6 @@ async function assignTag(tagId: string) {
   if (!book.value) return
   try {
     await tagsApi.assign(book.value.id, tagId)
-    addingTagId.value = null
     await load()
     await tagsStore.fetch()
   } catch (e) {
@@ -158,17 +157,33 @@ async function unassignTag(tagName: string) {
   }
 }
 
-const addingTagId = ref<string | null>(null)
-const newTagName = ref('')
-async function createAndAssign() {
-  if (!book.value || !newTagName.value.trim()) return
-  try {
-    const tag = await tagsStore.create(newTagName.value.trim())
-    await tagsApi.assign(book.value.id, tag.id)
-    newTagName.value = ''
-    await load()
-  } catch (e) {
-    message.error(e instanceof Error ? e.message : '建立標籤失敗')
+const tagSelectValue = ref<string | null>(null)
+const tagSearchText = ref('')
+
+const tagSelectOptions = computed(() => {
+  const existing = availableTags.value.map((t) => ({ label: t.name, value: `id:${t.id}` }))
+  const q = tagSearchText.value.trim()
+  if (q && !allTags.value.some((t) => t.name === q)) {
+    existing.unshift({ label: `建立「${q}」`, value: `new:${q}` })
+  }
+  return existing
+})
+
+async function handleTagSelect(value: string) {
+  if (!book.value) return
+  tagSelectValue.value = null
+  tagSearchText.value = ''
+  if (value.startsWith('id:')) {
+    await assignTag(value.slice(3))
+  } else if (value.startsWith('new:')) {
+    const name = value.slice(4)
+    try {
+      const tag = await tagsStore.create(name)
+      await tagsApi.assign(book.value.id, tag.id)
+      await load()
+    } catch (e) {
+      message.error(e instanceof Error ? e.message : '建立標籤失敗')
+    }
   }
 }
 
@@ -295,20 +310,15 @@ async function savePhysical() {
               {{ t }}
             </n-tag>
             <n-select
-              v-if="availableTags.length"
-              v-model:value="addingTagId"
+              v-model:value="tagSelectValue"
               size="small"
               class="tag-add"
-              placeholder="+ 加標籤"
-              :options="availableTags.map((t) => ({ label: t.name, value: t.id }))"
-              @update:value="assignTag"
-            />
-            <n-input
-              v-model:value="newTagName"
-              size="small"
-              class="tag-new"
-              placeholder="新標籤"
-              @keyup.enter="createAndAssign"
+              placeholder="+ 加標籤 / 新標籤"
+              filterable
+              clearable
+              :options="tagSelectOptions"
+              @update:value="handleTagSelect"
+              @search="(q) => (tagSearchText = q)"
             />
           </div>
 
@@ -563,10 +573,7 @@ async function savePhysical() {
   opacity: 0.7;
 }
 .tag-add {
-  width: 120px;
-}
-.tag-new {
-  width: 110px;
+  width: 160px;
 }
 .reading-box {
   display: flex;
