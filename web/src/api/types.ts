@@ -151,3 +151,21 @@ export interface CreateTagRequest {
   name: string
   color?: string | null
 }
+
+export interface Review {
+  reviewerName: string | null
+  rating: number | null
+  reviewText: string | null
+  reviewDate: string | null
+  helpfulCount: number | null
+}
+
+export interface ReviewSourceResult {
+  source: string
+  fetchedAt: string | null
+  reviews: Review[]
+}
+
+export interface ReviewsResult {
+  sources: ReviewSourceResult[]
+}
