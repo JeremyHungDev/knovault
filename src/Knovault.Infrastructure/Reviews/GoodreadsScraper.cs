@@ -110,10 +110,13 @@ public class GoodreadsScraper : IBookReviewScraper
                 ? (float)r.GetDouble() : null;
 
             var text = node.TryGetProperty("text", out var t) && t.ValueKind != JsonValueKind.Null
-                ? t.GetString() : null;
+                ? StripHtml(t.GetString()) : null;
 
-            var date = node.TryGetProperty("createdAt", out var d) && d.ValueKind != JsonValueKind.Null
-                ? d.GetString() : null;
+            string? date = null;
+            if (node.TryGetProperty("createdAt", out var d) && d.ValueKind != JsonValueKind.Null)
+                date = d.ValueKind == JsonValueKind.Number
+                    ? DateTimeOffset.FromUnixTimeMilliseconds((long)d.GetDouble()).ToString("yyyy-MM-dd")
+                    : d.GetString();
 
             int? likes = node.TryGetProperty("likeCount", out var l) && l.ValueKind != JsonValueKind.Null
                 ? l.GetInt32() : null;
@@ -138,4 +141,13 @@ public class GoodreadsScraper : IBookReviewScraper
           }
         }
         """;
+
+    private static string? StripHtml(string? html)
+    {
+        if (html is null) return null;
+        var text = Regex.Replace(html, "<br\\s*/?>", "\n", RegexOptions.IgnoreCase);
+        text = Regex.Replace(text, "<[^>]+>", "");
+        text = System.Net.WebUtility.HtmlDecode(text);
+        return text.Trim();
+    }
 }
