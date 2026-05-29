@@ -304,7 +304,7 @@ watch(() => props.bookId, load);
   margin-top: 16px;
   padding: 16px;
   border-radius: 8px;
-  background: rgba(128, 128, 128, 0.06);
+  background: var(--bg-surface);
   text-align: center;
 }
 .placeholder-box a {
@@ -320,7 +320,7 @@ watch(() => props.bookId, load);
 .review-card {
   padding: 12px 16px;
   border-radius: 8px;
-  background: rgba(128, 128, 128, 0.06);
+  background: var(--bg-surface);
 }
 .review-header {
   display: flex;
@@ -334,7 +334,7 @@ watch(() => props.bookId, load);
   font-weight: 600;
 }
 .stars {
-  color: #f0a500;
+  color: var(--accent-yellow);
   letter-spacing: 1px;
 }
 .review-date {
