@@ -241,7 +241,7 @@ async function submit() {
 }
 .back-btn {
   font-size: 13px;
-  color: #aaa;
+  color: var(--text-muted);
 }
 .page-header h2 {
   margin: 0;
