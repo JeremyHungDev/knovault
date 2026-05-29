@@ -172,7 +172,6 @@ async function handleSelect(key: string) {
   gap: 4px;
   box-sizing: border-box;
   background: var(--bg-card);
-  border-top: 1px solid var(--border-card);
 }
 .info-bar .title {
   color: var(--text-card);
