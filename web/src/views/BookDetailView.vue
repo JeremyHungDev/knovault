@@ -491,14 +491,14 @@ async function savePhysical() {
   aspect-ratio: 3 / 4;
   object-fit: cover;
   border-radius: 8px;
-  background: rgba(128, 128, 128, 0.12);
+  background: var(--bg-surface);
 }
 .cover-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 60px;
-  color: rgba(128, 128, 128, 0.5);
+  color: var(--text-muted);
 }
 .cover-overlay {
   position: absolute;
@@ -586,7 +586,7 @@ async function savePhysical() {
   gap: 10px;
   padding: 12px;
   border-radius: 8px;
-  background: rgba(128, 128, 128, 0.08);
+  background: var(--bg-surface);
 }
 .reading-row {
   display: flex;
