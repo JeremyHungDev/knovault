@@ -6,10 +6,8 @@ import type { BookSummary, ReadingStatus } from '@/api/types'
 import { booksApi } from '@/api/books'
 import { coverThumbUrl } from '@/api/http'
 import { authorsLine, READING_STATUS_LABELS } from '@/utils/format'
-import { useThemeStore } from '@/stores/theme'
 
 const props = defineProps<{ book: BookSummary }>()
-const themeStore = useThemeStore()
 const emit = defineEmits<{ refresh: [] }>()
 
 const router = useRouter()
@@ -97,7 +95,7 @@ async function handleSelect(key: string) {
 
     </div>
 
-    <div class="info-bar" :class="themeStore.dark ? 'info-dark' : 'info-light'" @click="open">
+    <div class="info-bar" @click="open">
       <div class="title">{{ book.title }}</div>
       <div class="author-row">
         <n-ellipsis class="author" style="flex: 1">
@@ -173,40 +171,20 @@ async function handleSelect(key: string) {
   flex-direction: column;
   gap: 4px;
   box-sizing: border-box;
+  background: var(--bg-elevated);
 }
-/* Dark mode */
-.info-dark {
-  background: #2d2d30;
+.info-bar .title {
+  color: var(--text-primary);
 }
-.info-dark .title {
-  color: #ffffff;
+.info-bar .author {
+  color: var(--text-secondary);
 }
-.info-dark .author {
-  color: rgba(255, 255, 255, 0.60);
+.info-bar .menu-btn {
+  color: var(--text-muted);
 }
-.info-dark .menu-btn {
-  color: rgba(255, 255, 255, 0.75);
-}
-.info-dark .menu-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.15);
-}
-/* Light mode */
-.info-light {
-  background: #f2f2f2;
-}
-.info-light .title {
-  color: #1a1a1a;
-}
-.info-light .author {
-  color: rgba(0, 0, 0, 0.50);
-}
-.info-light .menu-btn {
-  color: rgba(0, 0, 0, 0.55);
-}
-.info-light .menu-btn:hover {
-  color: #111;
-  background: rgba(0, 0, 0, 0.08);
+.info-bar .menu-btn:hover {
+  color: var(--text-primary);
+  background: var(--hover-bg);
 }
 .title {
   font-weight: 600;
@@ -221,7 +199,7 @@ async function handleSelect(key: string) {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex-shrink: 0;   /* 不被壓縮，確保作者列永遠在 */
+  flex-shrink: 0;
   min-width: 0;
 }
 .author {
@@ -241,7 +219,7 @@ async function handleSelect(key: string) {
   border-radius: 4px;
 }
 .menu-btn:focus-visible {
-  outline: 2px solid #18a058;
+  outline: 2px solid var(--accent-brand);
   outline-offset: 2px;
 }
 </style>
