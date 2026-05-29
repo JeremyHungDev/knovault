@@ -70,4 +70,7 @@ const router = useRouter()
   margin: 0 auto;
   padding: 20px;
 }
+.brand :deep(svg rect:first-child) {
+  fill: var(--accent-brand);
+}
 </style>
