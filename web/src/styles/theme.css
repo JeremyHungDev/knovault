@@ -18,6 +18,7 @@
   --text-card-sub:   rgba(0, 0, 0, 0.50);
   --text-card-muted: rgba(0, 0, 0, 0.55);
   --hover-card:      rgba(0, 0, 0, 0.08);
+  --border-card:     rgba(0, 0, 0, 0.08);
 
   --accent-brand:  #859900;
   --accent-blue:   #268bd2;
@@ -45,4 +46,5 @@
   --text-card-sub:   rgba(255, 255, 255, 0.60);
   --text-card-muted: rgba(255, 255, 255, 0.75);
   --hover-card:      rgba(255, 255, 255, 0.15);
+  --border-card:     rgba(255, 255, 255, 0.10);
 }
