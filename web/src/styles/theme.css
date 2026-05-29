@@ -1,5 +1,7 @@
 /* Solarized Light (default) */
 :root {
+  color-scheme: light;
+
   --bg-base:      #fdf6e3;
   --bg-elevated:  #eee8d5;
   --bg-surface:   rgba(88, 110, 117, 0.06);
@@ -18,6 +20,8 @@
 
 /* Solarized Dark */
 :root.dark {
+  color-scheme: dark;
+
   --bg-base:      #002b36;
   --bg-elevated:  #073642;
   --bg-surface:   rgba(131, 148, 150, 0.06);
