@@ -1,0 +1,30 @@
+/* Solarized Light (default) */
+:root {
+  --bg-base:      #fdf6e3;
+  --bg-elevated:  #eee8d5;
+  --bg-surface:   rgba(88, 110, 117, 0.06);
+
+  --text-primary:   #586e75;
+  --text-secondary: #93a1a1;
+  --text-muted:     #839496;
+
+  --hover-bg: rgba(88, 110, 117, 0.10);
+
+  --accent-brand:  #859900;
+  --accent-blue:   #268bd2;
+  --accent-yellow: #b58900;
+  --accent-red:    #dc322f;
+}
+
+/* Solarized Dark */
+:root.dark {
+  --bg-base:      #002b36;
+  --bg-elevated:  #073642;
+  --bg-surface:   rgba(131, 148, 150, 0.06);
+
+  --text-primary:   #93a1a1;
+  --text-secondary: #586e75;
+  --text-muted:     #657b83;
+
+  --hover-bg: rgba(131, 148, 150, 0.10);
+}
