@@ -171,20 +171,20 @@ async function handleSelect(key: string) {
   flex-direction: column;
   gap: 4px;
   box-sizing: border-box;
-  background: var(--bg-elevated);
+  background: var(--bg-card);
 }
 .info-bar .title {
-  color: var(--text-primary);
+  color: var(--text-card);
 }
 .info-bar .author {
-  color: var(--text-secondary);
+  color: var(--text-card-sub);
 }
 .info-bar .menu-btn {
-  color: var(--text-muted);
+  color: var(--text-card-muted);
 }
 .info-bar .menu-btn:hover {
-  color: var(--text-primary);
-  background: var(--hover-bg);
+  color: var(--text-card);
+  background: var(--hover-card);
 }
 .title {
   font-weight: 600;

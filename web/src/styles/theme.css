@@ -12,6 +12,13 @@
 
   --hover-bg: rgba(88, 110, 117, 0.10);
 
+  /* Card info-bar: original neutral grays, intentionally not Solarized */
+  --bg-card:         #f2f2f2;
+  --text-card:       #1a1a1a;
+  --text-card-sub:   rgba(0, 0, 0, 0.50);
+  --text-card-muted: rgba(0, 0, 0, 0.55);
+  --hover-card:      rgba(0, 0, 0, 0.08);
+
   --accent-brand:  #859900;
   --accent-blue:   #268bd2;
   --accent-yellow: #b58900;
@@ -31,4 +38,11 @@
   --text-muted:     #657b83;
 
   --hover-bg: rgba(131, 148, 150, 0.10);
+
+  /* Card info-bar: original neutral grays, intentionally not Solarized */
+  --bg-card:         #2d2d30;
+  --text-card:       #ffffff;
+  --text-card-sub:   rgba(255, 255, 255, 0.60);
+  --text-card-muted: rgba(255, 255, 255, 0.75);
+  --hover-card:      rgba(255, 255, 255, 0.15);
 }
