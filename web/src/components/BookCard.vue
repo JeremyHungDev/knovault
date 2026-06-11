@@ -35,7 +35,7 @@ const dropdownOptions = computed(() => [
   { label: '新增實體版本', key: 'add-physical' },
   { type: 'divider', key: 'div-1' },
   {
-    label: () => h('span', { style: { color: '#e88080' } }, '刪除'),
+    label: () => h('span', { style: { color: 'var(--accent-red)' } }, '刪除'),
     key: 'delete',
   },
 ])
@@ -130,7 +130,7 @@ async function handleSelect(key: string) {
 }
 .info-bar:hover {
   transform: translateY(-1px);
-  filter: brightness(1.08);
+  background: var(--bg-card-hover);
 }
 .cover-wrap {
   position: relative;
@@ -172,6 +172,7 @@ async function handleSelect(key: string) {
   gap: 4px;
   box-sizing: border-box;
   background: var(--bg-card);
+  border-top: 1px solid var(--border-card);
 }
 .info-bar .title {
   color: var(--text-card);
