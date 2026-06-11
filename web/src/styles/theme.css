@@ -7,13 +7,15 @@
   --bg-surface:   rgba(88, 110, 117, 0.06);
 
   --text-primary:   #586e75;
-  --text-secondary: #93a1a1;
+  --text-secondary: #657b83;
   --text-muted:     #839496;
 
   --hover-bg: rgba(88, 110, 117, 0.10);
 
-  /* Card info-bar: original neutral grays, intentionally not Solarized */
-  --bg-card:         #e0e0e0;
+  /* Card info-bar: warm grays matched to the cream base */
+  --bg-card:         #dcd5c6;
+  --bg-card-hover:   #d2cab9;
+  --border-card:     rgba(0, 0, 0, 0.12);
   --text-card:       #1a1a1a;
   --text-card-sub:   rgba(0, 0, 0, 0.50);
   --text-card-muted: rgba(0, 0, 0, 0.55);
@@ -25,24 +27,30 @@
   --accent-red:    #dc322f;
 }
 
-/* Solarized Dark */
+/* Kavita-style dark */
 :root.dark {
   color-scheme: dark;
 
-  --bg-base:      #002b36;
-  --bg-elevated:  #073642;
-  --bg-surface:   rgba(131, 148, 150, 0.06);
+  --bg-base:      #1f2020;
+  --bg-elevated:  #2a2b2c;
+  --bg-surface:   rgba(255, 255, 255, 0.06);
 
-  --text-primary:   #93a1a1;
-  --text-secondary: #586e75;
-  --text-muted:     #657b83;
+  --text-primary:   #efefef;
+  --text-secondary: rgba(255, 255, 255, 0.60);
+  --text-muted:     rgba(255, 255, 255, 0.45);
 
-  --hover-bg: rgba(131, 148, 150, 0.10);
+  --hover-bg: rgba(255, 255, 255, 0.08);
 
-  /* Card info-bar: original neutral grays, intentionally not Solarized */
-  --bg-card:         #2d2d30;
-  --text-card:       #ffffff;
-  --text-card-sub:   rgba(255, 255, 255, 0.60);
-  --text-card-muted: rgba(255, 255, 255, 0.75);
-  --hover-card:      rgba(255, 255, 255, 0.15);
+  --bg-card:         #202122;
+  --bg-card-hover:   #2c2d2e;
+  --border-card:     rgba(255, 255, 255, 0.08);
+  --text-card:       #efefef;
+  --text-card-sub:   rgba(255, 255, 255, 0.55);
+  --text-card-muted: rgba(255, 255, 255, 0.70);
+  --hover-card:      rgba(255, 255, 255, 0.10);
+
+  --accent-brand:  #4ac694;
+  --accent-blue:   #58a6da;
+  --accent-yellow: #d0a52b;
+  --accent-red:    #e25d5a;
 }
