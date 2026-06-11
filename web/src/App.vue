@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import {
   NConfigProvider,
   NDialogProvider,
+  NGlobalStyle,
   NLoadingBarProvider,
   NMessageProvider,
   NNotificationProvider,
@@ -28,6 +29,9 @@ const lightOverrides: GlobalThemeOverrides = {
     errorColor:          '#dc322f',
     infoColor:           '#2aa198',
     bodyColor:           '#fdf6e3',
+  },
+  Layout: {
+    headerColor: '#eee8d5',
   },
 }
 
@@ -58,6 +62,7 @@ const themeOverrides = computed(() =>
 
 <template>
   <n-config-provider :theme="theme" :theme-overrides="themeOverrides" :locale="zhTW" :date-locale="dateZhTW">
+    <n-global-style />
     <n-loading-bar-provider>
       <n-message-provider>
         <n-dialog-provider>

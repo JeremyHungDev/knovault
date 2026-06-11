@@ -173,6 +173,7 @@ async function handleSelect(key: string) {
   box-sizing: border-box;
   background: var(--bg-card);
   border-top: 1px solid var(--border-card);
+  transition: background-color 0.15s ease, transform 0.15s ease;
 }
 .info-bar .title {
   color: var(--text-card);
