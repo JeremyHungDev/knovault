@@ -13,7 +13,7 @@ const router = useRouter()
       <div class="brand" @click="router.push('/')">
         <n-icon size="22">
           <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-            <rect width="64" height="64" rx="12" fill="#18a058" />
+            <rect width="64" height="64" rx="12" fill="#859900" />
             <g fill="#fff">
               <rect x="16" y="14" width="9" height="36" rx="1.5" />
               <rect x="27" y="14" width="9" height="36" rx="1.5" />
